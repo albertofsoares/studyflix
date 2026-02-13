@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyFlix - A Netflix dos Estudos</title>
-    <!-- Ícones -->
+    <title>StudyFlix</title>
+    <!-- Ícones Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Quill Editor (Para Texto Rico) -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    
     <style>
         :root {
             --bg-color: #141414;
             --card-bg: #1f1f1f;
-            --primary: #e50914; /* Vermelho Netflix */
+            --primary: #e50914; 
             --text-main: #ffffff;
             --text-secondary: #b3b3b3;
+            --input-bg: #333;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
@@ -23,421 +28,619 @@
             overflow-x: hidden;
         }
 
-        /* Header */
+        /* --- TELA DE LOGIN --- */
+        #auth-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            background-image: url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bcae-07a3f8dc141a/f6d7434e-d6de-4185-a6d4-c77a2d08737b/BR-pt-20220502-popsignuptwoweeks-perspective_alpha_website_medium.jpg');
+            background-blend-mode: overlay;
+            z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .auth-box {
+            background: rgba(0,0,0,0.75);
+            padding: 60px;
+            border-radius: 4px;
+            width: 450px;
+            max-width: 90%;
+        }
+        .auth-box h1 { margin-bottom: 30px; }
+        .auth-input {
+            width: 100%; padding: 16px; margin-bottom: 16px;
+            background: #333; border: none; border-radius: 4px; color: white;
+        }
+        .auth-btn {
+            width: 100%; padding: 16px;
+            background: var(--primary); color: white; font-weight: bold;
+            border: none; border-radius: 4px; cursor: pointer; margin-top: 20px;
+        }
+        .toggle-auth { margin-top: 20px; color: #737373; cursor: pointer; }
+        .toggle-auth span { color: white; }
+
+        /* --- APP PRINCIPAL --- */
+        #app-container { display: none; } /* Escondido até logar */
+
         header {
             padding: 20px 4%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10%, rgba(0,0,0,0));
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 10%, rgba(0,0,0,0));
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
         }
 
-        .logo {
-            color: var(--primary);
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        .logo { color: var(--primary); font-size: 1.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-decoration: none; }
 
-        /* Hero Section (Destaque) */
         .hero {
             height: 60vh;
-            background: linear-gradient(to top, var(--bg-color), transparent),
-                        url('https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: flex-end;
-            padding: 0 4% 100px;
+            background-size: cover; background-position: center;
+            display: flex; align-items: flex-end; padding: 0 4% 100px;
+            position: relative;
         }
-
+        .hero::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, var(--bg-color), transparent);
+        }
+        .hero-content { position: relative; z-index: 2; }
         .hero-content h1 { font-size: 3rem; margin-bottom: 15px; }
-        .hero-content p { font-size: 1.2rem; max-width: 600px; margin-bottom: 20px; text-shadow: 2px 2px 4px black; }
         
         .btn {
-            padding: 10px 25px;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: transform 0.2s;
+            padding: 10px 25px; border: none; border-radius: 4px; font-size: 1rem; font-weight: bold;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: transform 0.2s;
         }
-
         .btn-primary { background-color: var(--primary); color: white; }
         .btn-secondary { background-color: rgba(109, 109, 110, 0.7); color: white; margin-left: 10px; }
         .btn:hover { transform: scale(1.05); }
 
-        /* Listas de Conteúdo */
         .category { padding: 20px 4%; }
-        .category h2 { margin-bottom: 15px; font-size: 1.2rem; color: var(--text-secondary); }
-
-        .carousel {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 20px;
-            scrollbar-width: none; /* Firefox */
-        }
+        .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .carousel { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
         .carousel::-webkit-scrollbar { display: none; }
 
         .card {
-            min-width: 250px;
-            height: 140px;
-            background-color: #333;
-            border-radius: 4px;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.3s;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-size: cover;
-            background-position: center;
+            min-width: 250px; height: 140px; background-color: #333; border-radius: 4px;
+            position: relative; cursor: pointer; transition: transform 0.3s; overflow: hidden;
+            background-size: cover; background-position: center;
         }
-
         .card:hover { transform: scale(1.1); z-index: 10; border: 2px solid var(--text-main); }
-        
         .card-content {
-            background: rgba(0,0,0,0.8);
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-align: center;
-            padding: 10px;
+            background: rgba(0,0,0,0.8); width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s; padding: 10px; text-align: center;
         }
-        
         .card:hover .card-content { opacity: 1; }
-        .progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 4px;
-            background: var(--primary);
-            width: 0%; /* Dinâmico */
-        }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--primary); width: 0%; }
 
-        /* Modal (Visualizador de Aula) */
+        /* --- MODAL DE AULA --- */
         .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            overflow-y: auto;
-            padding: 50px 4%;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; padding: 50px 4%;
         }
-
-        .modal-content {
-            background: #181818;
-            max-width: 900px;
-            margin: 0 auto;
-            border-radius: 8px;
-            position: relative;
-        }
-
+        .modal-content { background: #181818; max-width: 900px; margin: 0 auto; border-radius: 8px; position: relative; min-height: 80vh;}
         .close-btn {
-            position: absolute;
-            top: 20px; right: 20px;
-            font-size: 2rem;
-            cursor: pointer;
-            z-index: 1001;
-            background: rgba(0,0,0,0.5);
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 40px;
+            position: absolute; top: 20px; right: 20px; font-size: 2rem; cursor: pointer; z-index: 1001;
+            background: rgba(0,0,0,0.5); width: 40px; height: 40px; border-radius: 50%; text-align: center; line-height: 40px;
         }
-
-        .modal-header {
-            height: 300px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            display: flex;
-            align-items: flex-end;
-            padding: 40px;
-        }
-        .modal-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; width: 100%; height: 50%;
-            background: linear-gradient(to top, #181818, transparent);
-        }
-
+        .modal-header-bg { height: 300px; background-size: cover; background-position: center; position: relative; display: flex; align-items: flex-end; padding: 40px; }
+        .modal-header-bg::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, #181818, transparent); }
         .modal-body { padding: 40px; }
         
-        /* Tabs no Modal */
         .tabs { display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         .tab-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.1rem; cursor: pointer; font-weight: bold; }
         .tab-btn.active { color: white; border-bottom: 3px solid var(--primary); }
-        
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.5s; }
 
-        .resource-link {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: #2f2f2f;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            text-decoration: none;
-            color: white;
-            transition: background 0.2s;
-        }
-        .resource-link:hover { background: #404040; }
-
-        .check-complete {
-            margin-top: 30px;
-            padding: 15px;
-            border: 2px solid #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
+        .ql-container.ql-snow { border: none !important; color: #ddd; font-size: 16px; }
+        .ql-toolbar.ql-snow { border: none !important; background: #333; color: white; }
+        
+        .check-complete { margin-top: 30px; padding: 15px; border: 2px solid #333; display: flex; align-items: center; gap: 10px; cursor: pointer; border-radius: 4px; }
         .check-complete.done { border-color: #2ecc71; color: #2ecc71; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Responsivo */
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2rem; }
-            .card { min-width: 160px; height: 90px; }
+        /* --- PAINEL ADMIN --- */
+        #admin-panel { display: none; padding: 40px 4%; background: #000; min-height: 100vh; }
+        .admin-section { background: #1f1f1f; padding: 20px; margin-bottom: 30px; border-radius: 8px; }
+        .admin-form input, .admin-form select, .admin-form textarea {
+            width: 100%; padding: 10px; margin-bottom: 10px; background: #333; color: white; border: 1px solid #444; border-radius: 4px;
         }
+        .item-list { margin-top: 15px; }
+        .list-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; align-items: center; }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+        .btn-danger { background: #b91c1c; color: white; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-        <div class="logo">STUDYFLIX</div>
-        <div style="display: flex; gap: 20px; align-items: center;">
-            <span>👤 Perfil</span>
+    <!-- CONTAINER AUTH -->
+    <div id="auth-container">
+        <div class="auth-box">
+            <h1 id="auth-title">Entrar</h1>
+            <input type="email" id="email" class="auth-input" placeholder="Email ou Celular">
+            <input type="password" id="password" class="auth-input" placeholder="Senha">
+            <button class="auth-btn" onclick="handleAuth()">Entrar</button>
+            <div class="toggle-auth" onclick="toggleAuthMode()">
+                <span id="auth-toggle-text">Novo por aqui? Assine agora.</span>
+            </div>
+            <p id="auth-error" style="color: red; margin-top: 10px; font-size: 0.9rem;"></p>
         </div>
-    </header>
+    </div>
 
-    <!-- Hero / Destaque -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Sistemas Operacionais</h1>
-            <p>Unidade 2: Gerenciamento de Memória. Descubra como o SO gerencia a RAM e o que é Deadlock.</p>
-            <div>
-                <button class="btn btn-primary" onclick="openClass('so', 1)">
-                    <i data-lucide="play"></i> Assistir Aula Atual
-                </button>
-                <button class="btn btn-secondary">
-                    <i data-lucide="info"></i> Mais Info
-                </button>
+    <!-- APP PRINCIPAL -->
+    <div id="app-container">
+        <header>
+            <div class="logo" id="site-logo">STUDYFLIX</div>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <button id="admin-btn" class="btn btn-secondary" style="display: none;" onclick="showAdmin()">Painel Admin</button>
+                <button class="btn btn-secondary" onclick="logout()">Sair</button>
+            </div>
+        </header>
+
+        <!-- Home View -->
+        <div id="home-view">
+            <!-- Hero Dinâmico -->
+            <section class="hero" id="hero-section" style="background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');">
+                <div class="hero-content">
+                    <h1 id="hero-title">Bem-vindo aos Estudos</h1>
+                    <p id="hero-desc">Selecione uma aula abaixo para começar.</p>
+                </div>
+            </section>
+
+            <!-- Categorias (Renderizadas via JS) -->
+            <div id="categories-container"></div>
+        </div>
+
+        <!-- Painel Admin View -->
+        <div id="admin-panel">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
+                <h1>Painel Administrativo</h1>
+                <button class="btn btn-secondary" onclick="hideAdmin()">Voltar ao Site</button>
+            </div>
+
+            <!-- Configurações do Site -->
+            <div class="admin-section">
+                <h2>⚙️ Configurações Gerais</h2>
+                <div class="admin-form">
+                    <input type="text" id="config-title" placeholder="Nome do Site (Ex: GabrielFlix)">
+                    <input type="text" id="config-favicon" placeholder="URL do Ícone/Favicon">
+                    <button class="btn btn-primary" onclick="saveSiteConfig()">Salvar Aparência</button>
+                </div>
+            </div>
+
+            <!-- Gestão de Matérias (Categorias) -->
+            <div class="admin-section">
+                <h2>📚 Criar Matéria (Categoria)</h2>
+                <div class="admin-form">
+                    <input type="text" id="cat-name" placeholder="Nome da Matéria (Ex: Sistemas Operacionais)">
+                    <button class="btn btn-primary" onclick="addCategory()">Adicionar Matéria</button>
+                </div>
+                <div class="item-list" id="admin-cat-list"></div>
+            </div>
+
+            <!-- Gestão de Aulas -->
+            <div class="admin-section">
+                <h2>🎬 Adicionar/Editar Aula</h2>
+                <div class="admin-form">
+                    <select id="lesson-cat-select"><option>Selecione a Matéria</option></select>
+                    <input type="text" id="lesson-title" placeholder="Título da Aula">
+                    <input type="text" id="lesson-desc" placeholder="Descrição Curta">
+                    <input type="text" id="lesson-img" placeholder="URL da Imagem de Capa">
+                    <input type="text" id="lesson-video" placeholder="ID do Video (Youtube/Drive) ou URL Embed">
+                    <input type="text" id="lesson-audio" placeholder="Link do Podcast (NotebookLM)">
+                    <input type="text" id="lesson-slides" placeholder="Link dos Slides (PDF/Drive)">
+                    
+                    <h3 style="margin: 20px 0 10px;">Resumo & Conteúdo (Editor Rico)</h3>
+                    <div id="editor-container" style="height: 300px; background: white; color: black;"></div>
+                    
+                    <button class="btn btn-primary" style="margin-top: 20px;" onclick="saveLesson()">Salvar Aula</button>
+                </div>
+                <div class="item-list" id="admin-lesson-list"></div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Categorias -->
-    <section class="category">
-        <h2>💻 Sistemas Operacionais - Unidade 1</h2>
-        <div class="carousel" id="so-list">
-            <!-- Inserido via JS -->
-        </div>
-    </section>
-
-    <section class="category">
-        <h2>📊 Gestão de Projetos - Unidade 1</h2>
-        <div class="carousel" id="gp-list">
-            <!-- Inserido via JS -->
-        </div>
-    </section>
-
-    <!-- Modal de Visualização -->
+    <!-- MODAL DE VISUALIZAÇÃO -->
     <div class="modal" id="classModal">
         <div class="modal-content">
             <div class="close-btn" onclick="closeModal()">×</div>
-            
-            <div class="modal-header" id="modalHeader" style="background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+            <div class="modal-header-bg" id="modal-bg">
                 <div style="position: relative; z-index: 2;">
-                    <h1 id="modalTitle">Título da Aula</h1>
-                    <p id="modalDesc">Descrição breve do episódio...</p>
+                    <h1 id="modal-title">Título</h1>
+                    <p id="modal-desc">Desc...</p>
                 </div>
             </div>
-
             <div class="modal-body">
-                <!-- Abas -->
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('video')">Vídeo</button>
-                    <button class="tab-btn" onclick="switchTab('audio')">Podcast (NotebookLM)</button>
                     <button class="tab-btn" onclick="switchTab('text')">Resumo & Slides</button>
+                    <button class="tab-btn" onclick="switchTab('audio')">Podcast</button>
                 </div>
 
-                <!-- Conteúdos das Abas -->
                 <div id="tab-video" class="tab-content active">
-                    <div style="background: #000; height: 300px; display: flex; align-items: center; justify-content: center; color: #666; border-radius: 8px;">
-                        <i data-lucide="video" size="48"></i>
-                        <p style="margin-left: 10px;">Player de Vídeo (Embed do Google Drive/YouTube)</p>
+                    <div id="video-container" style="width:100%; height:400px; background:black;"></div>
+                </div>
+
+                <div id="tab-text" class="tab-content">
+                    <!-- Conteúdo Rico renderizado aqui -->
+                    <div id="rich-text-content" style="color: #ddd; line-height: 1.6; margin-bottom: 30px;"></div>
+                    
+                    <div class="resource-link">
+                        <i data-lucide="presentation"></i>
+                        <a id="slides-link" href="#" target="_blank" style="color: white; text-decoration: none;">Abrir Slides da Aula</a>
                     </div>
                 </div>
 
                 <div id="tab-audio" class="tab-content">
                     <div class="resource-link">
                         <i data-lucide="headphones"></i>
-                        <div>
-                            <h3>Debate sobre Deadlock</h3>
-                            <p>Podcast gerado no NotebookLM</p>
-                        </div>
-                        <i data-lucide="play-circle" style="margin-left: auto;"></i>
+                        <a id="audio-link" href="#" target="_blank" style="color: white; text-decoration: none;">Ouvir Podcast de Debate</a>
                     </div>
                 </div>
 
-                <div id="tab-text" class="tab-content">
-                    <div class="resource-link">
-                        <i data-lucide="file-text"></i>
-                        <div>
-                            <h3>Resumo Mestre (PDF)</h3>
-                            <p>Anotações manuais da dupla</p>
-                        </div>
-                    </div>
-                    <div class="resource-link">
-                        <i data-lucide="presentation"></i>
-                        <div>
-                            <h3>Slides da Apresentação</h3>
-                            <p>Arquivo PowerPoint/PDF</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botão de Conclusão -->
-                <div class="check-complete" id="checkBtn" onclick="toggleComplete()">
+                <div class="check-complete" id="checkBtn" onclick="toggleProgress()">
                     <i data-lucide="check-circle"></i>
                     <span id="checkText">Marcar como Concluído</span>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <script>
-        // Inicializa ícones
-        lucide.createIcons();
+    <!-- FIREBASE SETUP -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- DADOS (Simulando um Banco de Dados) ---
-        const db = {
-            so: [
-                { id: 1, title: "Aula 01: Introdução", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" },
-                { id: 2, title: "Aula 02: Processos", image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" },
-                { id: 3, title: "Aula 03: Threads", image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" }
-            ],
-            gp: [
-                { id: 1, title: "Aula 01: Ciclo de Vida", image: "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" },
-                { id: 2, title: "Aula 02: Escopo", image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" }
-            ]
+        // Configuração fornecida
+        const firebaseConfig = {
+            apiKey: "AIzaSyC38VXjnYskoAx5SLF6n3PiEgnaRtz4IJ0",
+            authDomain: "studyflix53.firebaseapp.com",
+            projectId: "studyflix53",
+            storageBucket: "studyflix53.firebasestorage.app",
+            messagingSenderId: "799853597162",
+            appId: "1:799853597162:web:179f1450c419157d62a293"
         };
 
-        // --- RENDERIZAÇÃO ---
-        function renderList(category, elementId) {
-            const container = document.getElementById(elementId);
-            const list = db[category];
+        // Init Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- VARIÁVEIS GLOBAIS ---
+        let currentUser = null;
+        let quill; // Editor Rico
+        let currentLessonId = null;
+
+        // --- AUTH LOGIC ---
+        window.isLoginMode = true;
+
+        window.toggleAuthMode = () => {
+            window.isLoginMode = !window.isLoginMode;
+            document.getElementById('auth-title').innerText = window.isLoginMode ? "Entrar" : "Criar Conta";
+            document.getElementById('auth-toggle-text').innerText = window.isLoginMode ? "Novo por aqui? Assine agora." : "Já tem conta? Entre.";
+            document.querySelector('.auth-btn').innerText = window.isLoginMode ? "Entrar" : "Cadastrar";
+        }
+
+        window.handleAuth = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const errorP = document.getElementById('auth-error');
+
+            try {
+                if (window.isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                }
+            } catch (error) {
+                errorP.innerText = error.message;
+            }
+        };
+
+        window.logout = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('app-container').style.display = 'block';
+                loadSiteConfig();
+                loadContent();
+                
+                // Checagem de Admin (@userpro.com)
+                if (user.email && user.email.includes("@userpro.com")) {
+                    document.getElementById('admin-btn').style.display = 'inline-block';
+                }
+            } else {
+                document.getElementById('auth-container').style.display = 'flex';
+                document.getElementById('app-container').style.display = 'none';
+            }
+        });
+
+        // --- QUILLO EDITOR SETUP ---
+        window.addEventListener('DOMContentLoaded', () => {
+            quill = new Quill('#editor-container', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['clean']
+                    ]
+                }
+            });
+            lucide.createIcons();
+        });
+
+        // --- LÓGICA DO APP (USUÁRIO) ---
+
+        // Carregar Configurações (Título, Logo)
+        async function loadSiteConfig() {
+            const docSnap = await getDoc(doc(db, "settings", "general"));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if(data.title) {
+                    document.title = data.title;
+                    document.getElementById('site-logo').innerText = data.title;
+                }
+                // Favicon Hack
+                if(data.favicon) {
+                    let link = document.querySelector("link[rel~='icon']");
+                    if (!link) {
+                        link = document.createElement('link');
+                        link.rel = 'icon';
+                        document.getElementsByTagName('head')[0].appendChild(link);
+                    }
+                    link.href = data.favicon;
+                }
+            }
+        }
+
+        // Carregar Conteúdo (Categorias e Aulas)
+        async function loadContent() {
+            const catContainer = document.getElementById('categories-container');
+            catContainer.innerHTML = '';
+            const adminCatSelect = document.getElementById('lesson-cat-select');
+            const adminCatList = document.getElementById('admin-cat-list');
+
+            // Limpa Select Admin
+            adminCatSelect.innerHTML = '<option value="">Selecione a Matéria</option>';
+            adminCatList.innerHTML = '';
+
+            const q = collection(db, "categories");
+            const querySnapshot = await getDocs(q);
+
+            querySnapshot.forEach((docSnap) => {
+                const catData = docSnap.data();
+                const catId = docSnap.id;
+
+                // 1. Renderiza no Site
+                const section = document.createElement('section');
+                section.className = 'category';
+                section.innerHTML = `
+                    <div class="category-header">
+                        <h2>${catData.name}</h2>
+                    </div>
+                    <div class="carousel" id="cat-${catId}">Loading...</div>
+                `;
+                catContainer.appendChild(section);
+                
+                // Busca aulas dessa categoria
+                loadLessonsForCategory(catId);
+
+                // 2. Renderiza no Admin (Select e Lista)
+                const opt = document.createElement('option');
+                opt.value = catId; opt.innerText = catData.name;
+                adminCatSelect.appendChild(opt);
+
+                const divItem = document.createElement('div');
+                divItem.className = 'list-item';
+                divItem.innerHTML = `<span>${catData.name}</span> <button class="btn btn-sm btn-danger" onclick="deleteCategory('${catId}')">X</button>`;
+                adminCatList.appendChild(divItem);
+            });
+        }
+
+        async function loadLessonsForCategory(catId) {
+            const listContainer = document.getElementById(`cat-${catId}`);
+            listContainer.innerHTML = '';
+
+            const q = collection(db, "lessons"); // Na real seria melhor query(collection(db, "lessons"), where("catId", "==", catId)) mas simplifiquei
+            const snapshot = await getDocs(q);
             
-            list.forEach(item => {
-                // Checa progresso salvo
-                const isDone = localStorage.getItem(`class_${category}_${item.id}`) === 'true';
-                const progressWidth = isDone ? '100%' : '0%';
+            // Filtro manual client-side para simplificar indexação
+            const lessons = [];
+            snapshot.forEach(d => {
+                if(d.data().catId === catId) lessons.push({id: d.id, ...d.data()});
+            });
+
+            lessons.forEach(async lesson => {
+                // Checar progresso
+                let progressWidth = '0%';
+                if (currentUser) {
+                    const progRef = doc(db, "users", currentUser.uid, "progress", lesson.id);
+                    const progSnap = await getDoc(progRef);
+                    if(progSnap.exists() && progSnap.data().done) progressWidth = '100%';
+                }
 
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.style.backgroundImage = `url('${item.image}')`;
-                card.onclick = () => openClass(category, item.id);
+                card.style.backgroundImage = `url('${lesson.image || "https://via.placeholder.com/300"}')`;
+                card.onclick = () => openClass(lesson.id);
                 card.innerHTML = `
                     <div class="card-content">
-                        <h3>${item.title}</h3>
-                        <i data-lucide="play-circle" size="32" style="margin-top:10px;"></i>
+                        <h3>${lesson.title}</h3>
+                        <i data-lucide="play-circle" style="margin-top:10px;"></i>
                     </div>
-                    <div class="progress-bar" style="width: ${progressWidth}"></div>
+                    <div class="progress-bar" id="prog-${lesson.id}" style="width: ${progressWidth}"></div>
                 `;
-                container.appendChild(card);
+                listContainer.appendChild(card);
             });
             lucide.createIcons();
         }
 
-        // Renderiza as listas ao carregar
-        renderList('so', 'so-list');
-        renderList('gp', 'gp-list');
+        // --- LÓGICA DE MODAL E PROGRESSO ---
+        window.openClass = async (lessonId) => {
+            currentLessonId = lessonId;
+            const docRef = doc(db, "lessons", lessonId);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('modal-title').innerText = data.title;
+                document.getElementById('modal-desc').innerText = data.desc;
+                document.getElementById('modal-bg').style.backgroundImage = `url('${data.image}')`;
+                
+                // Video (Embed)
+                const vidContainer = document.getElementById('video-container');
+                if(data.videoUrl && data.videoUrl.includes('youtube')) {
+                     // Extrair ID simples se for Youtube
+                    const videoId = data.videoUrl.split('v=')[1] || data.videoUrl.split('/').pop();
+                    vidContainer.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+                } else {
+                    vidContainer.innerHTML = `<p style="color:white; padding:20px;">Video: ${data.videoUrl}</p>`;
+                }
 
-        // --- LÓGICA DO MODAL ---
-        let currentClassId = null;
+                // Rich Content
+                document.getElementById('rich-text-content').innerHTML = data.content || "<p>Sem resumo.</p>";
+                document.getElementById('slides-link').href = data.slidesUrl || "#";
+                document.getElementById('audio-link').href = data.audioUrl || "#";
 
-        function openClass(category, id) {
-            currentClassId = `class_${category}_${id}`;
-            const modal = document.getElementById('classModal');
-            const title = document.getElementById('modalTitle');
-            const checkBtn = document.getElementById('checkBtn');
-            const checkText = document.getElementById('checkText');
+                // Checar progresso
+                const checkBtn = document.getElementById('checkBtn');
+                const checkText = document.getElementById('checkText');
+                const progRef = doc(db, "users", currentUser.uid, "progress", lessonId);
+                const progSnap = await getDoc(progRef);
+                
+                if (progSnap.exists() && progSnap.data().done) {
+                    checkBtn.classList.add('done');
+                    checkText.innerText = "Concluído";
+                } else {
+                    checkBtn.classList.remove('done');
+                    checkText.innerText = "Marcar como Concluído";
+                }
 
-            // Simula busca de dados
-            const classData = db[category].find(i => i.id === id);
-            title.innerText = classData.title;
-
-            // Checa estado
-            if (localStorage.getItem(currentClassId) === 'true') {
-                checkBtn.classList.add('done');
-                checkText.innerText = "Concluído";
-            } else {
-                checkBtn.classList.remove('done');
-                checkText.innerText = "Marcar como Concluído";
+                document.getElementById('classModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
             }
+        };
 
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Trava scroll do fundo
-        }
-
-        function closeModal() {
-            document.getElementById('classModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-            // Recarrega página para atualizar barras de progresso (simples)
-            location.reload(); 
-        }
-
-        function switchTab(tabName) {
-            // Esconde todos
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            // Mostra atual
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function toggleComplete() {
+        window.toggleProgress = async () => {
+            if(!currentUser || !currentLessonId) return;
             const checkBtn = document.getElementById('checkBtn');
             const checkText = document.getElementById('checkText');
-            
+            const progRef = doc(db, "users", currentUser.uid, "progress", currentLessonId);
+
             if (checkBtn.classList.contains('done')) {
                 // Desmarcar
                 checkBtn.classList.remove('done');
                 checkText.innerText = "Marcar como Concluído";
-                localStorage.setItem(currentClassId, 'false');
+                await setDoc(progRef, { done: false });
+                document.getElementById(`prog-${currentLessonId}`).style.width = '0%';
             } else {
                 // Marcar
                 checkBtn.classList.add('done');
                 checkText.innerText = "Concluído";
-                localStorage.setItem(currentClassId, 'true');
+                await setDoc(progRef, { done: true });
+                document.getElementById(`prog-${currentLessonId}`).style.width = '100%';
+            }
+        };
+
+        window.closeModal = () => {
+            document.getElementById('classModal').style.display = 'none';
+            document.getElementById('video-container').innerHTML = ''; // Stop video
+            document.body.style.overflow = 'auto';
+        };
+        
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        };
+
+        // --- FUNÇÕES ADMIN ---
+        window.showAdmin = () => {
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+            loadAdminList();
+        }
+        window.hideAdmin = () => {
+            document.getElementById('home-view').style.display = 'block';
+            document.getElementById('admin-panel').style.display = 'none';
+            loadContent(); // Recarregar para ver mudanças
+        }
+
+        window.saveSiteConfig = async () => {
+            const title = document.getElementById('config-title').value;
+            const favicon = document.getElementById('config-favicon').value;
+            await setDoc(doc(db, "settings", "general"), { title, favicon });
+            alert("Configurações salvas!");
+            loadSiteConfig();
+        }
+
+        window.addCategory = async () => {
+            const name = document.getElementById('cat-name').value;
+            if(!name) return;
+            await addDoc(collection(db, "categories"), { name });
+            document.getElementById('cat-name').value = '';
+            loadContent(); // Refresh lists
+        }
+
+        window.deleteCategory = async (id) => {
+            if(confirm("Tem certeza?")) {
+                await deleteDoc(doc(db, "categories", id));
+                loadContent();
             }
         }
+
+        window.saveLesson = async () => {
+            const catId = document.getElementById('lesson-cat-select').value;
+            const title = document.getElementById('lesson-title').value;
+            const desc = document.getElementById('lesson-desc').value;
+            const image = document.getElementById('lesson-img').value;
+            const videoUrl = document.getElementById('lesson-video').value;
+            const audioUrl = document.getElementById('lesson-audio').value;
+            const slidesUrl = document.getElementById('lesson-slides').value;
+            const content = quill.root.innerHTML; // Pega HTML do editor
+
+            if(!catId || !title) return alert("Preencha categoria e título");
+
+            await addDoc(collection(db, "lessons"), {
+                catId, title, desc, image, videoUrl, audioUrl, slidesUrl, content
+            });
+            
+            alert("Aula Salva!");
+            // Limpar form
+            document.getElementById('lesson-title').value = '';
+            quill.setContents([]);
+            loadAdminList();
+        }
+        
+        async function loadAdminList() {
+             const list = document.getElementById('admin-lesson-list');
+             list.innerHTML = 'Carregando aulas...';
+             const snapshot = await getDocs(collection(db, "lessons"));
+             list.innerHTML = '';
+             snapshot.forEach(doc => {
+                 const d = doc.data();
+                 const item = document.createElement('div');
+                 item.className = 'list-item';
+                 item.innerHTML = `<span>${d.title}</span> <button class="btn btn-sm btn-danger" onclick="deleteLesson('${doc.id}')">X</button>`;
+                 list.appendChild(item);
+             });
+        }
+        
+        window.deleteLesson = async (id) => {
+            if(confirm("Apagar aula?")) {
+                await deleteDoc(doc(db, "lessons", id));
+                loadAdminList();
+            }
+        }
+
+        // Tornar funções globais acessíveis fora do módulo
+        window.addCategory = window.addCategory;
     </script>
 </body>
 </html>
