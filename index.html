@@ -146,6 +146,13 @@
         }
         .toast.success { border-left-color: #39ff14; }
         .toast.error { border-left-color: #ff4d4d; }
+
+        /* Countdown Overlay */
+        #countdownOverlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 50;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-netflix-red selection:text-white">
@@ -226,9 +233,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, setDoc, query, where, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
-        // Configuração Hardcoded (Para fins de demonstração)
+        // Configuração Hardcoded
         const firebaseConfig = {
             apiKey: "AIzaSyC38VXjnYskoAx5SLF6n3PiEgnaRtz4IJ0",
             authDomain: "studyflix53.firebaseapp.com",
@@ -245,7 +251,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         // Referências Seguras
         const getColRef = (colName) => collection(db, 'artifacts', appId, 'public', 'data', colName);
@@ -257,7 +262,6 @@
         // 2. UTILITÁRIOS E SEGURANÇA
         // ==========================================
         
-        // Estado Global Reativo
         const state = {
             user: null,
             isAdmin: false,
@@ -268,7 +272,6 @@
         };
 
         const utils = {
-            // Sistema de Notificação Visual Robusto
             showToast: (msg, type = 'info') => {
                 const toast = document.getElementById('toast');
                 const msgEl = document.getElementById('toastMsg');
@@ -277,21 +280,16 @@
                 msgEl.innerText = msg;
                 toast.className = `toast show ${type}`;
                 
-                // Ícones dinâmicos
                 if(type === 'success') iconEl.className = 'fas fa-check-circle';
                 else if(type === 'error') iconEl.className = 'fas fa-exclamation-triangle';
                 else iconEl.className = 'fas fa-info-circle';
 
-                console.log(`[TOAST] [${type.toUpperCase()}] ${msg}`);
-
-                // Auto-hide
                 if (window.toastTimeout) clearTimeout(window.toastTimeout);
                 window.toastTimeout = setTimeout(() => {
                     toast.classList.remove('show');
                 }, 4000);
             },
 
-            // Regex validada para YouTube
             getYouTubeID: (url) => {
                 if (!url) return null;
                 const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -311,16 +309,13 @@
                     'auth/user-not-found': 'Usuário não encontrado.',
                     'auth/wrong-password': 'Senha incorreta.',
                     'auth/email-already-in-use': 'E-mail já cadastrado.',
-                    'permission-denied': 'Permissão negada (Firebase Security Rules).',
-                    'storage/unauthorized': 'Sem permissão para upload.',
-                    'auth/admin-restricted-operation': 'Login anônimo desativado. Use E-mail/Senha.'
+                    'permission-denied': 'Permissão negada.',
+                    'auth/admin-restricted-operation': 'Login anônimo desativado.'
                 };
-                return errors[code] || `Erro desconhecido: ${code}`;
+                return errors[code] || `Erro: ${code}`;
             }
         };
 
-        // WRAPPER DE SEGURANÇA (Pilar 1: Debugging & Tratamento de Erro)
-        // Envolve qualquer ação async, gerencia estado de loading do botão e captura erros
         async function safeAction(btnId, actionName, asyncFn) {
             const btn = document.getElementById(btnId);
             let originalText = "";
@@ -331,11 +326,8 @@
                 btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando...`;
             }
 
-            console.log(`[ACTION START] ${actionName}`);
-
             try {
                 await asyncFn();
-                console.log(`[ACTION SUCCESS] ${actionName}`);
             } catch (error) {
                 console.error(`[ACTION ERROR] ${actionName}:`, error);
                 utils.showToast(utils.formatError(error.code) || error.message, 'error');
@@ -353,16 +345,14 @@
 
         const mainApp = {
             init: async () => {
-                // Carregar configurações globais
                 try {
                     const snap = await getDoc(getSettingsRef());
                     if (snap.exists()) {
                         state.settings = { ...state.settings, ...snap.data() };
-                        console.log("[CONFIG] Configurações carregadas:", state.settings);
                     }
                     mainApp.applySettings();
                 } catch (e) {
-                    console.warn("[CONFIG] Usando defaults (primeira execução).");
+                    console.warn("[CONFIG] Usando defaults.");
                 }
             },
 
@@ -376,7 +366,6 @@
             },
 
             router: (view, params = null) => {
-                console.log(`[ROUTER] Navegando para: ${view}`);
                 state.currentView = view;
                 const container = document.getElementById('app');
                 window.speechSynthesis.cancel();
@@ -386,27 +375,23 @@
                 else if (view === 'admin') adminManager.init(container);
             },
 
-            // RENDERIZAÇÃO HOME
             renderHome: async (container) => {
-                container.innerHTML = `<div class="flex flex-col items-center mt-20"><div class="loader"></div><p class="text-gray-500 mt-4">Carregando catálogo...</p></div>`;
+                container.innerHTML = `<div class="flex flex-col items-center mt-20"><div class="loader"></div></div>`;
                 
-                // VERIFICAÇÃO DE SEGURANÇA ANTES DO FETCH
                 if (!state.user) {
                     container.innerHTML = `
                         <div class="flex flex-col items-center justify-center min-h-[50vh] text-center animate-fade-in p-6">
-                            <h1 class="text-5xl md:text-7xl font-black mb-6 text-white drop-shadow-lg">Bem-vindo ao <span class="text-netflix-red">StudyFlix</span></h1>
-                            <p class="text-xl text-gray-400 max-w-2xl mb-8">Sua plataforma de ensino personalizada. Para acessar o conteúdo exclusivo, é necessário realizar o login.</p>
-                            <button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-8 py-4 rounded text-xl font-bold hover:bg-red-700 transition shadow-lg shadow-red-900/40 transform hover:scale-105">
+                            <h1 class="text-5xl md:text-7xl font-black mb-6 text-white">Bem-vindo ao <span class="text-netflix-red">StudyFlix</span></h1>
+                            <p class="text-xl text-gray-400 max-w-2xl mb-8">Faça login para continuar sua jornada de aprendizado.</p>
+                            <button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-8 py-4 rounded text-xl font-bold hover:bg-red-700 transition">
                                 <i class="fas fa-sign-in-alt mr-2"></i> Acessar Plataforma
                             </button>
-                            <p class="text-sm text-gray-600 mt-8 max-w-md">Nota: Devido às configurações de segurança do banco de dados, o acesso anônimo está desabilitado. Por favor, crie uma conta ou faça login.</p>
                         </div>
                     `;
                     return;
                 }
 
                 try {
-                    // Fetch Paralelo para performance
                     const [subSnap, unitSnap, lessonSnap] = await Promise.all([
                         getDocs(getColRef("subjects")),
                         getDocs(getColRef("units")),
@@ -415,45 +400,31 @@
 
                     let html = `
                         <div class="mb-10 animate-fade-in relative z-10">
-                            <h1 class="text-5xl md:text-7xl font-black mb-4 text-white drop-shadow-lg">${state.settings.welcomeMessage}</h1>
+                            <h1 class="text-5xl md:text-7xl font-black mb-4 text-white">${state.settings.welcomeMessage}</h1>
                             <p class="text-xl text-gray-400 max-w-2xl">Sua plataforma de ensino personalizada.</p>
                         </div>
                     `;
 
                     if (subSnap.empty) {
-                        html += `
-                            <div class="border border-gray-700 bg-gray-800/50 p-8 rounded text-center max-w-lg mx-auto mt-10">
-                                <i class="fas fa-film text-4xl text-gray-600 mb-4"></i>
-                                <h3 class="text-xl font-bold text-white">Catálogo Vazio</h3>
-                                <p class="text-gray-400 mt-2">Acesse o CMS Admin para adicionar conteúdo.</p>
-                            </div>
-                        `;
+                        html += `<div class="text-center text-gray-500 mt-10">Catálogo Vazio. Acesse o CMS Admin.</div>`;
                     }
 
-                    // Loop de Matérias
                     subSnap.forEach(sub => {
                         html += `
                             <div class="mt-12 mb-4 animate-fade-in">
                                 <div class="flex items-center gap-4 group cursor-pointer w-fit" onclick="window.startSeries('${sub.id}')">
                                     <h2 class="text-2xl font-bold text-white group-hover:text-neon-cyan transition">${sub.data().title}</h2>
-                                    <span class="text-xs font-bold bg-netflix-red text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition transform translate-x-[-10px] group-hover:translate-x-0">
-                                        <i class="fas fa-play mr-1"></i> INICIAR JORNADA
-                                    </span>
+                                    <span class="text-xs font-bold bg-netflix-red text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition"><i class="fas fa-play mr-1"></i> INICIAR JORNADA</span>
                                 </div>
                             </div>
                         `;
                         
                         const subUnits = unitSnap.docs.filter(u => u.data().subjectId === sub.id);
                         
-                        if(subUnits.length === 0) html += `<p class="text-gray-600 italic text-sm ml-4">Sem unidades cadastradas.</p>`;
-
-                        // Loop de Unidades
                         subUnits.forEach(unit => {
                             html += `
                                 <div class="mb-8 ml-4 border-l-2 border-gray-800 pl-4">
-                                    <h3 class="text-gray-400 mb-3 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                                        <i class="fas fa-layer-group"></i> ${unit.data().title}
-                                    </h3>
+                                    <h3 class="text-gray-400 mb-3 text-xs font-bold uppercase tracking-widest flex items-center gap-2"><i class="fas fa-layer-group"></i> ${unit.data().title}</h3>
                                     <div class="scrolling-wrapper pb-4">
                             `;
                             
@@ -461,27 +432,19 @@
                             
                             if(unitLessons.length === 0) html += `<span class="text-gray-700 text-sm italic p-2">Em breve...</span>`;
 
-                            // Loop de Aulas
                             unitLessons.forEach(lesson => {
                                 const ytId = utils.getYouTubeID(lesson.data().videoUrl);
-                                const thumb = ytId 
-                                    ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` 
-                                    : 'https://placehold.co/300x169/333/999?text=Sem+Imagem';
+                                const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : 'https://placehold.co/300x169/333/999?text=Sem+Imagem';
                                 
                                 html += `
                                     <div class="card group" onclick="window.playLesson('${lesson.id}')">
                                         <div class="h-40 overflow-hidden rounded-t relative">
                                             <img src="${thumb}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500">
-                                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                                                <i class="fas fa-play-circle text-5xl text-white drop-shadow-lg"></i>
-                                            </div>
+                                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="fas fa-play-circle text-5xl text-white"></i></div>
                                         </div>
                                         <div class="p-4 bg-[#181818]">
                                             <h4 class="text-white font-bold text-sm truncate">${lesson.data().title}</h4>
-                                            <div class="flex justify-between items-center mt-2">
-                                                <span class="text-[10px] text-gray-500 uppercase">Aula</span>
-                                                <i class="fas fa-chevron-right text-gray-600 text-xs"></i>
-                                            </div>
+                                            <div class="flex justify-between items-center mt-2"><span class="text-[10px] text-gray-500 uppercase">Aula</span><i class="fas fa-chevron-right text-gray-600 text-xs"></i></div>
                                         </div>
                                     </div>`;
                             });
@@ -489,24 +452,17 @@
                         });
                     });
                     container.innerHTML = html;
-                    console.log("[HOME] Renderização concluída.");
                 } catch (e) { 
                     console.error(e);
-                    // Falha silenciosa para mostrar home vazia caso não tenha permissão ainda
                     if(e.code && e.code.includes('permission-denied')) {
-                         container.innerHTML = `<div class="text-center mt-20 p-6 bg-gray-900 rounded max-w-md mx-auto border border-gray-800">
-                            <i class="fas fa-lock text-4xl text-neon-cyan mb-4"></i><br>
-                            <h3 class="text-white font-bold text-xl mb-2">Acesso Restrito</h3>
-                            <p class="text-gray-400 mb-6">Faça login para visualizar o conteúdo.</p>
-                            <button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-6 py-2 rounded font-bold hover:bg-red-700 transition">Fazer Login</button>
-                         </div>`;
+                         container.innerHTML = `<div class="text-center mt-20 text-white">Acesso Restrito. Faça login.</div>`;
                     } else {
-                        container.innerHTML = `<div class="text-center text-red-500 mt-20"><i class="fas fa-bug text-4xl mb-4"></i><br>Erro crítico ao carregar home.<br>${e.message}</div>`; 
+                        container.innerHTML = `<div class="text-center text-red-500 mt-20">Erro crítico ao carregar home.</div>`; 
                     }
                 }
             },
 
-            // LÓGICA DO PLAYER (State Machine)
+            // --- LÓGICA DO PLAYER (MÁQUINA DE ESTADOS) ---
             renderPlayer: async (container, lessonId) => {
                 container.innerHTML = `<div class="flex justify-center mt-20"><div class="loader"></div></div>`;
                 
@@ -517,24 +473,23 @@
                     const data = docSnap.data();
                     const ytId = utils.getYouTubeID(data.videoUrl);
                     
-                    // Prepara navegação (Next Lesson)
+                    // Buscar próximas aulas para navegação
                     const allLessonsSnap = await getDocs(query(getColRef("lessons"), where("unitId", "==", data.unitId)));
                     const lessons = allLessonsSnap.docs.map(d => ({id: d.id, ...d.data()}));
-                    // Sort simples por criação (idealmente ter um campo 'order')
                     lessons.sort((a,b) => a.createdAt.localeCompare(b.createdAt));
                     
                     const currentIndex = lessons.findIndex(l => l.id === lessonId);
                     const nextLessonId = (currentIndex < lessons.length - 1) ? lessons[currentIndex + 1].id : null;
 
-                    // Globais de controle
-                    window.currentPlayerData = { lessonId, nextLessonId, hasFile: !!data.fileUrl };
+                    // Globais de Controle
+                    window.currentPlayerData = { lessonId, nextLessonId, materialUrl: data.materialUrl };
 
                     container.innerHTML = `
                         <div class="max-w-6xl mx-auto animate-fade-in relative min-h-[85vh] flex flex-col">
-                            <!-- Header de Navegação -->
+                            <!-- Header -->
                             <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
-                                <button onclick="app.router('home')" class="text-gray-400 hover:text-white flex items-center gap-2 transition hover:-translate-x-1">
-                                    <i class="fas fa-arrow-left"></i> Voltar ao Menu
+                                <button onclick="app.router('home')" class="text-gray-400 hover:text-white flex items-center gap-2">
+                                    <i class="fas fa-arrow-left"></i> Voltar
                                 </button>
                                 <div class="text-right">
                                     <h2 class="text-white font-bold text-lg">${data.title}</h2>
@@ -542,81 +497,78 @@
                                 </div>
                             </div>
 
-                            <!-- FASE 1: VÍDEO -->
+                            <!-- FASE 1: VÍDEO (Entrada) -->
                             <div id="phase1" class="phase-container phase-active w-full flex-1 flex flex-col justify-center">
                                 <div class="video-container mx-auto shadow-2xl shadow-purple-900/10 w-full max-w-4xl">
                                     <div id="yt-player"></div>
                                 </div>
                                 <div class="mt-6 text-center">
-                                    <p class="text-gray-400 animate-pulse text-sm"><i class="fas fa-eye"></i> Assista até o fim para liberar o material.</p>
-                                    <!-- Bypass para dev/demo -->
-                                    <button onclick="window.nextPhase(2)" class="mt-4 text-xs text-gray-600 hover:text-white underline">Pular Vídeo (Dev Mode)</button>
+                                    <p class="text-gray-400 animate-pulse text-sm"><i class="fas fa-eye"></i> Assista até o fim para avançar.</p>
+                                    <button onclick="window.nextPhase(2)" class="mt-4 text-xs text-gray-600 hover:text-white underline">Pular Vídeo (Teste)</button>
                                 </div>
                             </div>
 
-                            <!-- FASE 2: LEITURA -->
-                            <div id="phase2" class="phase-container w-full text-center py-10">
-                                <i class="fas fa-book-reader text-6xl text-neon-cyan mb-6 animate-bounce"></i>
-                                <h2 class="text-4xl font-bold mb-4 text-white">Momento de Estudo</h2>
-                                <p class="text-gray-400 mb-8 max-w-xl mx-auto">Revise o material complementar antes de prosseguir para o resumo final.</p>
-                                
-                                ${data.fileUrl ? `
-                                    <a href="${data.fileUrl}" target="_blank" class="inline-flex items-center gap-3 bg-gray-800 border border-gray-600 text-white px-8 py-4 rounded-lg hover:bg-gray-700 hover:border-white transition transform hover:scale-105 shadow-lg mb-8">
-                                        <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
-                                        <div class="text-left">
-                                            <div class="font-bold">Abrir Material de Apoio</div>
-                                            <div class="text-xs text-gray-400">Clique para visualizar</div>
-                                        </div>
-                                    </a>
-                                ` : `
-                                    <div class="bg-gray-800/50 p-4 rounded inline-block mb-8 border border-gray-700">
-                                        <i class="fas fa-info-circle text-gray-500"></i> Nenhum anexo para esta aula.
-                                    </div>
-                                `}
-                                
-                                <div>
-                                    <button onclick="window.nextPhase(3)" class="bg-neon-cyan text-black font-black px-10 py-4 rounded-full hover:bg-cyan-300 transition shadow-[0_0_20px_rgba(0,243,255,0.4)] flex items-center gap-3 mx-auto">
-                                        CONCLUIR LEITURA <i class="fas fa-arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- FASE 3: RESUMO E CONCLUSÃO -->
-                            <div id="phase3" class="phase-container w-full py-10">
+                            <!-- FASE 2: REFORÇO (Áudio/Resumo) -->
+                            <div id="phase2" class="phase-container w-full py-10">
                                 <div class="max-w-3xl mx-auto">
                                     <div class="flex items-center gap-4 mb-6">
-                                        <div class="w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_red]"></div>
-                                        <h2 class="text-3xl font-bold text-white">Resumo Inteligente</h2>
+                                        <div class="w-4 h-4 bg-neon-cyan rounded-full animate-pulse shadow-[0_0_10px_cyan]"></div>
+                                        <h2 class="text-3xl font-bold text-white">Reforço do Conteúdo</h2>
                                     </div>
                                     
-                                    <div class="bg-[#1a1a1a] p-8 rounded-xl border border-neon-purple/30 shadow-[0_0_40px_rgba(188,19,254,0.1)] relative overflow-hidden">
-                                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-neon-purple to-transparent opacity-50"></div>
-                                        
+                                    <div class="bg-[#1a1a1a] p-8 rounded-xl border border-neon-cyan/30 shadow-lg relative overflow-hidden">
+                                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-neon-cyan to-transparent opacity-50"></div>
                                         <div id="summaryText" class="prose prose-invert prose-lg text-gray-300 leading-relaxed min-h-[100px]">
-                                            ${data.summary || "<p>Nenhum resumo disponível para leitura automática.</p>"}
+                                            ${data.summary || "<p>Ouvindo reforço de aprendizado...</p>"}
                                         </div>
                                     </div>
 
                                     <div class="mt-8 text-center">
-                                        <p class="text-sm text-gray-500 italic mb-4">O sistema finalizará a aula automaticamente após a leitura.</p>
-                                        <button onclick="window.speechSynthesis.cancel(); window.finishLesson()" class="text-red-500 hover:text-white underline text-sm">Parar Áudio e Concluir Agora</button>
+                                        <p class="text-sm text-gray-500 italic mb-4 animate-pulse">🔊 Ouvindo resumo automático...</p>
+                                        <button onclick="window.skipAudio()" class="text-neon-cyan hover:text-white underline text-sm border border-neon-cyan/50 px-4 py-2 rounded hover:bg-neon-cyan/10">
+                                            Pular Áudio e Ir para Estudo Ativo <i class="fas fa-forward ml-1"></i>
+                                        </button>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- FASE 3: ESTUDO ATIVO (Material + Conclusão) -->
+                            <div id="phase3" class="phase-container w-full text-center py-6">
+                                <h2 class="text-3xl font-bold mb-6 text-white"><i class="fas fa-book-open mr-2 text-neon-green"></i> Estudo Ativo</h2>
+                                
+                                ${data.materialUrl ? `
+                                    <div class="w-full h-[600px] bg-white rounded-lg shadow-lg overflow-hidden relative mb-4 border border-gray-700">
+                                        <iframe src="${data.materialUrl}" class="w-full h-full border-0" allowfullscreen></iframe>
+                                    </div>
+                                    <div class="mb-8">
+                                        <a href="${data.materialUrl}" target="_blank" class="text-neon-green text-sm underline hover:text-white transition">
+                                            <i class="fas fa-external-link-alt mr-1"></i> Abrir material em nova aba
+                                        </a>
+                                    </div>
+                                ` : `
+                                    <div class="bg-gray-800/50 p-8 rounded inline-block mb-8 border border-gray-700 max-w-lg">
+                                        <i class="fas fa-check-circle text-4xl text-neon-green mb-4"></i>
+                                        <p class="text-gray-300">Nenhum slide extra para esta aula. Revise suas anotações.</p>
+                                    </div>
+                                `}
+                                
+                                <div class="mt-6">
+                                    <button onclick="window.completeLessonSequence()" class="bg-neon-green text-black font-black px-12 py-5 rounded-full hover:bg-green-400 transition shadow-[0_0_30px_rgba(57,255,20,0.4)] flex items-center gap-3 mx-auto text-lg transform hover:scale-105">
+                                        ✅ CONCLUIR AULA
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     `;
 
-                    // Init YouTube API
+                    // YouTube Setup
                     if (window.YT && window.YT.Player) {
                         new YT.Player('yt-player', {
                             height: '100%', width: '100%', videoId: ytId,
                             playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0 },
                             events: {
                                 'onStateChange': (e) => {
-                                    if (e.data === YT.PlayerState.ENDED) {
-                                        console.log("[PLAYER] Vídeo finalizado.");
-                                        window.nextPhase(2);
-                                    }
+                                    if (e.data === YT.PlayerState.ENDED) window.nextPhase(2);
                                 }
                             }
                         });
@@ -624,28 +576,23 @@
 
                 } catch (e) {
                     console.error(e);
-                    container.innerHTML = `<div class="text-red-500 text-center mt-20">Erro ao carregar player: ${e.message}</div>`;
+                    container.innerHTML = `<div class="text-red-500 text-center mt-20">Erro ao carregar player.</div>`;
                 }
             },
             
-            // Auto-Roteamento
             startSeries: async (subjectId) => {
-                utils.showToast("Localizando primeira aula...", "info");
+                utils.showToast("Buscando conteúdo...", "info");
                 try {
                     const unitsSnap = await getDocs(query(getColRef("units"), where("subjectId", "==", subjectId)));
-                    if(unitsSnap.empty) throw new Error("Matéria sem unidades.");
+                    if(unitsSnap.empty) throw new Error("Matéria vazia.");
                     
-                    // Pega primeira unidade
-                    const firstUnit = unitsSnap.docs[0]; // Simplificado (deveria ordenar)
-                    
+                    const firstUnit = unitsSnap.docs[0];
                     const lessonSnap = await getDocs(query(getColRef("lessons"), where("unitId", "==", firstUnit.id)));
-                    if(lessonSnap.empty) throw new Error("Unidade sem aulas.");
+                    if(lessonSnap.empty) throw new Error("Unidade vazia.");
                     
-                    // Pega primeira aula
                     const lessons = lessonSnap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => a.createdAt.localeCompare(b.createdAt));
                     
                     mainApp.router('player', lessons[0].id);
-
                 } catch (error) {
                     utils.showToast(error.message, 'error');
                 }
@@ -653,349 +600,185 @@
         };
 
         // ==========================================
-        // 4. ADMINISTRAÇÃO & CMS (CORREÇÃO CRÍTICA)
+        // 4. ADMINISTRAÇÃO (CRUD)
         // ==========================================
-
         const adminManager = {
             init: (container) => {
                 if (!state.isAdmin) return mainApp.router('home');
-                
                 container.innerHTML = `
                     <div class="max-w-7xl mx-auto animate-fade-in">
-                        <header class="mb-8 flex flex-col md:flex-row justify-between items-end border-b border-gray-800 pb-6 gap-4">
-                            <div>
-                                <h2 class="text-4xl font-black text-white mb-2">CMS <span class="text-neon-cyan">ADMIN</span></h2>
-                                <p class="text-gray-400">Gerencie todo o conteúdo da plataforma em tempo real.</p>
-                            </div>
-                            <div class="flex gap-2 bg-gray-900 p-1 rounded-lg border border-gray-700">
-                                <button onclick="window.renderAdminTab('settings')" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white rounded hover:bg-gray-800 transition">Configurações</button>
-                                <button onclick="window.renderAdminTab('subject')" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white rounded hover:bg-gray-800 transition">Matérias</button>
-                                <button onclick="window.renderAdminTab('unit')" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white rounded hover:bg-gray-800 transition">Unidades</button>
-                                <button onclick="window.renderAdminTab('lesson')" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white rounded hover:bg-gray-800 transition">Aulas</button>
+                        <header class="mb-8 border-b border-gray-800 pb-6">
+                            <h2 class="text-4xl font-black text-white mb-2">CMS ADMIN</h2>
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="window.renderAdminTab('settings')" class="bg-gray-800 text-white px-4 py-2 rounded">Config</button>
+                                <button onclick="window.renderAdminTab('subject')" class="bg-gray-800 text-white px-4 py-2 rounded">Matérias</button>
+                                <button onclick="window.renderAdminTab('unit')" class="bg-gray-800 text-white px-4 py-2 rounded">Unidades</button>
+                                <button onclick="window.renderAdminTab('lesson')" class="bg-gray-800 text-white px-4 py-2 rounded">Aulas</button>
                             </div>
                         </header>
-                        <div id="adminContent" class="bg-[#181818] border border-gray-800 rounded-xl p-6 min-h-[500px] relative shadow-2xl">
-                            <!-- Conteúdo injetado via JS -->
-                        </div>
-                    </div>
-                `;
+                        <div id="adminContent" class="bg-[#181818] border border-gray-800 rounded-xl p-6 min-h-[500px]"></div>
+                    </div>`;
                 window.renderAdminTab('settings');
             },
-
             renderTab: async (type) => {
                 const content = document.getElementById('adminContent');
-                content.innerHTML = '<div class="absolute inset-0 flex items-center justify-center bg-[#181818] z-10"><div class="loader"></div></div>';
-                
-                state.editingId = null; // Reset estado de edição
-                
-                // Highlight Tab
-                document.querySelectorAll('.tab-btn').forEach(b => {
-                    if(b.innerText.toLowerCase().includes(type === 'subject' ? 'matérias' : type === 'unit' ? 'unidades' : type === 'lesson' ? 'aulas' : 'configurações')) {
-                        b.classList.add('bg-neon-cyan', 'text-black');
-                        b.classList.remove('text-gray-400', 'hover:bg-gray-800');
-                    } else {
-                        b.classList.remove('bg-neon-cyan', 'text-black');
-                        b.classList.add('text-gray-400');
-                    }
-                });
+                content.innerHTML = '<div class="loader mx-auto"></div>';
+                state.editingId = null;
 
                 try {
                     if (type === 'settings') {
                         content.innerHTML = `
-                            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2"><i class="fas fa-sliders-h"></i> Parâmetros Globais</h3>
-                            <form onsubmit="return false;" class="max-w-2xl space-y-6">
-                                <div>
-                                    <label class="block text-gray-500 text-xs font-bold uppercase mb-2">Nome da Plataforma</label>
-                                    <input type="text" id="siteName" value="${state.settings.siteName}" class="w-full p-3 bg-black border border-gray-700 rounded text-white focus:border-neon-cyan focus:outline-none transition">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-500 text-xs font-bold uppercase mb-2">Mensagem de Boas-vindas</label>
-                                    <input type="text" id="welcomeMsg" value="${state.settings.welcomeMessage}" class="w-full p-3 bg-black border border-gray-700 rounded text-white focus:border-neon-cyan focus:outline-none transition">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-500 text-xs font-bold uppercase mb-2">URL do Favicon</label>
-                                    <input type="url" id="faviconUrl" value="${state.settings.favicon || ''}" class="w-full p-3 bg-black border border-gray-700 rounded text-white focus:border-neon-cyan focus:outline-none transition">
-                                </div>
-                                <button id="btnSettings" onclick="window.saveSettings()" class="bg-neon-purple text-white px-6 py-3 rounded font-bold hover:bg-purple-700 transition flex items-center gap-2">
-                                    <i class="fas fa-save"></i> Salvar Alterações
-                                </button>
-                            </form>
-                        `;
+                            <h3 class="text-xl font-bold text-white mb-6">Configurações</h3>
+                            <form onsubmit="return false;" class="max-w-2xl space-y-4">
+                                <input type="text" id="siteName" value="${state.settings.siteName}" class="w-full p-3 bg-black border border-gray-700 text-white rounded">
+                                <input type="text" id="welcomeMsg" value="${state.settings.welcomeMessage}" class="w-full p-3 bg-black border border-gray-700 text-white rounded">
+                                <input type="url" id="faviconUrl" value="${state.settings.favicon || ''}" class="w-full p-3 bg-black border border-gray-700 text-white rounded">
+                                <button id="btnSettings" onclick="window.saveSettings()" class="bg-neon-purple text-white px-6 py-2 rounded font-bold">Salvar</button>
+                            </form>`;
                     } else {
-                        // GENERIC CRUD UI
                         const collectionName = type + 's';
                         const snapshot = await getDocs(getColRef(collectionName));
                         const items = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-
-                        let formHtml = '';
                         
-                        // Form Builder Baseado no Tipo
+                        let formHtml = '';
                         if (type === 'subject') {
-                            formHtml = `
-                                <div class="grid gap-4">
-                                    <input type="text" id="title" placeholder="Nome da Matéria (Ex: Matemática)" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
-                                </div>`;
+                            formHtml = `<input type="text" id="title" placeholder="Nome da Matéria" class="w-full p-3 bg-black border border-gray-700 text-white rounded">`;
                         } else if (type === 'unit') {
                             const subjects = await getDocs(getColRef('subjects'));
                             const opts = subjects.docs.map(d => `<option value="${d.id}">${d.data().title}</option>`).join('');
-                            formHtml = `
-                                <div class="grid gap-4">
-                                    <select id="subjectId" class="w-full p-3 bg-black border border-gray-700 rounded text-white">${opts || '<option>Crie uma matéria primeiro</option>'}</select>
-                                    <input type="text" id="title" placeholder="Nome da Unidade (Ex: Álgebra I)" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
-                                </div>`;
+                            formHtml = `<select id="subjectId" class="w-full p-3 bg-black border border-gray-700 text-white rounded mb-4">${opts}</select><input type="text" id="title" placeholder="Nome da Unidade" class="w-full p-3 bg-black border border-gray-700 text-white rounded">`;
                         } else if (type === 'lesson') {
                             const units = await getDocs(getColRef('units'));
                             const opts = units.docs.map(d => `<option value="${d.id}">${d.data().title}</option>`).join('');
                             formHtml = `
-                                <div class="grid gap-4">
-                                    <select id="unitId" class="w-full p-3 bg-black border border-gray-700 rounded text-white">${opts || '<option>Crie uma unidade primeiro</option>'}</select>
-                                    <input type="text" id="title" placeholder="Título da Aula" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
-                                    <input type="url" id="videoUrl" placeholder="Link YouTube (Qualquer formato)" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
-                                    
-                                    <div class="bg-gray-900 rounded border border-gray-700">
-                                        <div id="editor" class="h-40 text-gray-300"></div>
-                                    </div>
-
-                                    <div class="border border-dashed border-gray-600 rounded p-4 text-center hover:bg-gray-800 transition relative">
-                                        <input type="file" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                                        <div id="fileLabel" class="text-gray-400 text-sm"><i class="fas fa-cloud-upload-alt mr-2"></i> Arraste PDF ou Áudio (Opcional)</div>
-                                    </div>
-                                </div>`;
+                                <select id="unitId" class="w-full p-3 bg-black border border-gray-700 text-white rounded mb-4">${opts}</select>
+                                <input type="text" id="title" placeholder="Título da Aula" class="w-full p-3 bg-black border border-gray-700 text-white rounded mb-4">
+                                <input type="url" id="videoUrl" placeholder="Link YouTube" class="w-full p-3 bg-black border border-gray-700 text-white rounded mb-4">
+                                <div class="bg-gray-900 rounded border border-gray-700 mb-4"><div id="editor" class="h-40 text-gray-300"></div></div>
+                                <input type="url" id="lessonMaterialUrl" placeholder="Link Material (Opcional)" class="w-full p-3 bg-black border border-gray-700 text-white rounded">
+                            `;
                         }
 
                         content.innerHTML = `
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                <!-- Coluna Formulário -->
                                 <div class="lg:col-span-1 border-r border-gray-800 pr-6">
                                     <h3 class="text-xl font-bold text-white mb-4" id="formHeader">Novo Item</h3>
-                                    <form onsubmit="return false;" class="space-y-4">
+                                    <form onsubmit="return false;">
                                         ${formHtml}
-                                        <div class="flex gap-2 pt-2">
-                                            <button id="btnSave" onclick="window.handleSave('${type}')" class="flex-1 bg-neon-cyan text-black font-bold py-3 rounded hover:bg-cyan-300 transition">
-                                                <i class="fas fa-plus-circle"></i> Criar
-                                            </button>
-                                            <button id="btnCancel" onclick="window.renderAdminTab('${type}')" class="hidden px-4 text-red-500 font-bold hover:bg-red-500/10 rounded">
-                                                Cancelar
-                                            </button>
+                                        <div class="flex gap-2 pt-4">
+                                            <button id="btnSave" onclick="window.handleSave('${type}')" class="flex-1 bg-neon-cyan text-black font-bold py-2 rounded">Salvar</button>
+                                            <button id="btnCancel" onclick="window.renderAdminTab('${type}')" class="hidden px-4 text-red-500 font-bold">Cancelar</button>
                                         </div>
                                     </form>
                                 </div>
-
-                                <!-- Coluna Lista -->
                                 <div class="lg:col-span-2">
-                                    <h3 class="text-xl font-bold text-gray-400 mb-4 flex justify-between">
-                                        Registros <span class="text-xs bg-gray-800 px-2 py-1 rounded">${items.length}</span>
-                                    </h3>
-                                    <div class="overflow-x-auto max-h-[600px] overflow-y-auto rounded border border-gray-800">
-                                        <table class="admin-table">
-                                            <thead>
-                                                <tr>
-                                                    <th class="pl-4">Título</th>
-                                                    <th>ID</th>
-                                                    <th class="text-right pr-4">Ações</th>
-                                                </tr>
-                                            </thead>
+                                    <h3 class="text-xl font-bold text-gray-400 mb-4">Registros (${items.length})</h3>
+                                    <div class="max-h-[500px] overflow-y-auto">
+                                        <table class="admin-table w-full text-white">
+                                            <thead><tr><th>Título</th><th>Ações</th></tr></thead>
                                             <tbody>
-                                                ${items.map(item => `
+                                                ${items.map(i => `
                                                     <tr>
-                                                        <td class="pl-4 font-medium text-white">${item.title}</td>
-                                                        <td class="text-gray-600 font-mono text-xs">${item.id.substring(0,6)}...</td>
-                                                        <td class="text-right pr-4">
-                                                            <button onclick="window.editItem('${type}', '${item.id}')" class="text-neon-cyan hover:bg-cyan-900/30 p-2 rounded transition mr-1" title="Editar"><i class="fas fa-edit"></i></button>
-                                                            <button onclick="window.deleteItem('${type}', '${item.id}')" class="text-red-500 hover:bg-red-900/30 p-2 rounded transition" title="Excluir"><i class="fas fa-trash"></i></button>
+                                                        <td>${i.title}</td>
+                                                        <td>
+                                                            <button onclick="window.editItem('${type}', '${i.id}')" class="text-neon-cyan mr-2">Edit</button>
+                                                            <button onclick="window.deleteItem('${type}', '${i.id}')" class="text-red-500">Del</button>
                                                         </td>
-                                                    </tr>
-                                                `).join('')}
+                                                    </tr>`).join('')}
                                             </tbody>
                                         </table>
-                                        ${items.length === 0 ? '<div class="p-8 text-center text-gray-600">Nenhum item encontrado.</div>' : ''}
                                     </div>
                                 </div>
-                            </div>
-                        `;
-
-                        // Init Quill APÓS o DOM existir (Critical Fix)
-                        if (type === 'lesson') {
-                            state.quill = new Quill('#editor', {
-                                theme: 'snow',
-                                placeholder: 'Escreva o resumo da aula aqui...',
-                                modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'header': 1 }, { 'header': 2 }], ['code-block']] }
-                            });
-                            
-                            // File Input listener para feedback visual
-                            document.getElementById('fileInput').addEventListener('change', (e) => {
-                                const label = document.getElementById('fileLabel');
-                                if (e.target.files[0]) {
-                                    label.innerHTML = `<span class="text-neon-cyan"><i class="fas fa-check"></i> ${e.target.files[0].name}</span>`;
-                                }
-                            });
-                        }
+                            </div>`;
+                        
+                        if (type === 'lesson') state.quill = new Quill('#editor', { theme: 'snow' });
                     }
-                } catch (e) {
-                    console.error(e);
-                    utils.showToast("Erro ao carregar aba Admin.", "error");
-                }
+                } catch(e) { console.error(e); }
             },
-
-            // Create / Update Logic com Debug
             handleSave: async (type) => {
                 await safeAction('btnSave', `Salvar ${type}`, async () => {
-                    const collectionName = type + 's';
-                    const isEdit = !!state.editingId;
-                    
-                    // Validação Básica
-                    const titleEl = document.getElementById('title');
-                    if (!titleEl || !titleEl.value.trim()) throw new Error("O campo Título é obrigatório.");
-
-                    const data = {
-                        title: titleEl.value,
+                    const col = type + 's';
+                    const data = { 
+                        title: document.getElementById('title').value,
                         updatedAt: new Date().toISOString()
                     };
+                    if (!state.editingId) data.createdAt = new Date().toISOString();
 
-                    if (!isEdit) data.createdAt = new Date().toISOString();
-
-                    // Validações Específicas
-                    if (type === 'unit') {
-                        data.subjectId = document.getElementById('subjectId').value;
-                    }
-                    else if (type === 'lesson') {
+                    if (type === 'unit') data.subjectId = document.getElementById('subjectId').value;
+                    if (type === 'lesson') {
                         data.unitId = document.getElementById('unitId').value;
-                        const videoUrl = document.getElementById('videoUrl').value;
-                        if (!utils.getYouTubeID(videoUrl)) throw new Error("URL do YouTube inválida.");
-                        data.videoUrl = videoUrl;
-                        
-                        // Quill Content
-                        if (state.quill) {
-                            data.summary = state.quill.root.innerHTML;
-                        }
-
-                        // Upload de Arquivo (Storage)
-                        const fileInput = document.getElementById('fileInput');
-                        if (fileInput && fileInput.files[0]) {
-                            const file = fileInput.files[0];
-                            console.log(`[UPLOAD] Iniciando upload de: ${file.name}`);
-                            
-                            // Visual feedback
-                            document.getElementById('fileLabel').innerText = "Enviando arquivo... (Aguarde)";
-                            
-                            const fileRef = ref(storage, `materials/${Date.now()}_${file.name}`);
-                            await uploadBytes(fileRef, file);
-                            data.fileUrl = await getDownloadURL(fileRef);
-                            
-                            console.log(`[UPLOAD] Sucesso. URL: ${data.fileUrl}`);
-                        }
+                        data.videoUrl = document.getElementById('videoUrl').value;
+                        data.summary = state.quill.root.innerHTML;
+                        data.materialUrl = document.getElementById('lessonMaterialUrl').value || "";
                     }
 
-                    // Firestore Action
-                    if (isEdit) {
-                        await updateDoc(getDocRef(collectionName, state.editingId), data);
-                        utils.showToast("Item atualizado com sucesso!", "success");
-                    } else {
-                        await addDoc(getColRef(collectionName), data);
-                        utils.showToast("Item criado com sucesso!", "success");
-                    }
-
-                    // Reload UI
+                    if (state.editingId) await updateDoc(getDocRef(col, state.editingId), data);
+                    else await addDoc(getColRef(col), data);
+                    
+                    utils.showToast("Salvo com sucesso!", "success");
                     window.renderAdminTab(type);
                 });
             },
-
             editItem: async (type, id) => {
                 state.editingId = id;
-                const collectionName = type + 's';
-                
-                // Feedback visual de carregamento
-                utils.showToast("Carregando dados para edição...", "info");
-
-                try {
-                    const docSnap = await getDoc(getDocRef(collectionName, id));
-                    if (!docSnap.exists()) throw new Error("Item não encontrado.");
-                    const data = docSnap.data();
-
-                    // Preenche campos
-                    document.getElementById('title').value = data.title;
-                    if (type === 'unit') document.getElementById('subjectId').value = data.subjectId;
-                    if (type === 'lesson') {
-                        document.getElementById('unitId').value = data.unitId;
-                        document.getElementById('videoUrl').value = data.videoUrl;
-                        if (state.quill) state.quill.root.innerHTML = data.summary || "";
-                        if (data.fileUrl) document.getElementById('fileLabel').innerText = "Arquivo já anexado (envie outro para substituir)";
-                    }
-
-                    // Muda estado do form
-                    document.getElementById('formHeader').innerText = "Editando Item";
-                    const btnSave = document.getElementById('btnSave');
-                    btnSave.innerHTML = `<i class="fas fa-save"></i> Atualizar`;
-                    btnSave.classList.replace('bg-neon-cyan', 'bg-neon-green');
-                    document.getElementById('btnCancel').classList.remove('hidden');
-
-                } catch (e) {
-                    utils.showToast(e.message, 'error');
+                const docSnap = await getDoc(getDocRef(type + 's', id));
+                const data = docSnap.data();
+                document.getElementById('title').value = data.title;
+                if (type === 'unit') document.getElementById('subjectId').value = data.subjectId;
+                if (type === 'lesson') {
+                    document.getElementById('unitId').value = data.unitId;
+                    document.getElementById('videoUrl').value = data.videoUrl;
+                    document.getElementById('lessonMaterialUrl').value = data.materialUrl || "";
+                    state.quill.root.innerHTML = data.summary || "";
+                }
+                document.getElementById('formHeader').innerText = "Editar Item";
+                document.getElementById('btnSave').innerText = "Atualizar";
+                document.getElementById('btnCancel').classList.remove('hidden');
+            },
+            deleteItem: async (type, id) => {
+                if(confirm("Excluir?")) {
+                    await deleteDoc(getDocRef(type + 's', id));
+                    window.renderAdminTab(type);
                 }
             },
-
-            deleteItem: async (type, id) => {
-                if (!confirm("Tem certeza? Esta ação é irreversível.")) return;
-                
-                await safeAction(null, `Excluir ${type}`, async () => {
-                    await deleteDoc(getDocRef(type + 's', id));
-                    utils.showToast("Item excluído permanentemente.", "success");
-                    window.renderAdminTab(type);
-                });
-            },
-
             saveSettings: async () => {
-                await safeAction('btnSettings', 'Salvar Configurações', async () => {
-                    const settings = {
+                await safeAction('btnSettings', 'Settings', async () => {
+                    const s = {
                         siteName: document.getElementById('siteName').value,
                         welcomeMessage: document.getElementById('welcomeMsg').value,
                         favicon: document.getElementById('faviconUrl').value
                     };
-                    await setDoc(getSettingsRef(), settings);
-                    state.settings = settings;
+                    await setDoc(getSettingsRef(), s);
+                    state.settings = s;
                     mainApp.applySettings();
-                    utils.showToast("Configurações aplicadas!", "success");
+                    utils.showToast("Configurações Salvas", "success");
                 });
             }
         };
 
         // ==========================================
-        // 5. BINDINGS E EVENTOS GLOBAIS
+        // 5. EVENTOS GLOBAIS
         // ==========================================
 
         window.app = mainApp;
         
-        // Auth Bindings
         window.authManager = {
-            toggleModal: (show) => {
-                const modal = document.getElementById('loginModal');
-                if (show) modal.classList.remove('hidden');
-                else modal.classList.add('hidden');
-            },
+            toggleModal: (s) => document.getElementById('loginModal').classList.toggle('hidden', !s),
             handleLogin: async () => {
-                const email = document.getElementById('emailInput').value;
-                const pass = document.getElementById('passInput').value;
+                const e = document.getElementById('emailInput').value, p = document.getElementById('passInput').value;
                 await safeAction('btnLogin', 'Login', async () => {
-                    if (!email || !pass) throw new Error("Preencha todos os campos.");
-                    await signInWithEmailAndPassword(auth, email, pass);
+                    await signInWithEmailAndPassword(auth, e, p);
                     window.authManager.toggleModal(false);
-                    utils.showToast("Login efetuado com sucesso!", "success");
                 });
             },
             handleRegister: async () => {
-                const email = document.getElementById('emailInput').value;
-                const pass = document.getElementById('passInput').value;
-                await safeAction('btnRegister', 'Cadastro', async () => {
-                    if (!email || !pass) throw new Error("Preencha todos os campos.");
-                    await createUserWithEmailAndPassword(auth, email, pass);
+                const e = document.getElementById('emailInput').value, p = document.getElementById('passInput').value;
+                await safeAction('btnRegister', 'Reg', async () => {
+                    await createUserWithEmailAndPassword(auth, e, p);
                     window.authManager.toggleModal(false);
-                    utils.showToast("Conta criada! Bem-vindo.", "success");
                 });
             },
-            logout: async () => {
-                await signOut(auth);
-                window.location.reload();
-            }
+            logout: async () => { await signOut(auth); window.location.reload(); }
         };
 
         // Admin Bindings
@@ -1004,113 +787,110 @@
         window.handleSave = adminManager.handleSave;
         window.editItem = adminManager.editItem;
         window.deleteItem = adminManager.deleteItem;
-        
-        // Navigation Bindings
         window.startSeries = mainApp.startSeries;
         window.playLesson = (id) => mainApp.router('player', id);
 
-        // Player Phase Control
+        // --- CONTROLE DE FASES (CORREÇÃO DE FLUXO) ---
         window.nextPhase = (phase) => {
-            // Remove active class
+            // Limpa estado anterior
             document.querySelectorAll('.phase-container').forEach(el => el.classList.remove('phase-active'));
-            
-            // Logic Phase 2 (Leitura)
-            if (phase === 2 && !window.currentPlayerData.hasFile) {
-                console.log("[PLAYER] Sem arquivo, pulando para Fase 3.");
-                return window.nextPhase(3);
-            }
+            window.speechSynthesis.cancel(); // Para qualquer áudio anterior
 
-            // Logic Phase 3 (Resumo)
-            if (phase === 3) {
+            // Lógica Fase 2 (Reforço - Auto Áudio)
+            if (phase === 2) {
                 const text = utils.stripHtml(document.getElementById('summaryText').innerHTML);
-                if (text && text.trim().length > 10) {
-                    console.log("[TTS] Iniciando leitura...");
+                if (text && text.length > 5) {
                     const u = new SpeechSynthesisUtterance(text);
                     u.lang = 'pt-BR';
                     u.rate = 1.1;
-                    u.onend = window.finishLesson;
-                    speechSynthesis.speak(u);
+                    u.onend = () => {
+                        console.log("Áudio finalizado. Indo para Fase 3.");
+                        window.nextPhase(3); // Auto-avanço
+                    };
+                    window.speechSynthesis.speak(u);
                 } else {
-                    console.log("[TTS] Texto insuficiente, finalizando.");
-                    setTimeout(window.finishLesson, 2000);
+                    // Sem texto, pula direto
+                    setTimeout(() => window.nextPhase(3), 1000);
+                    return;
                 }
             }
 
-            // Activate new phase
-            const nextEl = document.getElementById(`phase${phase}`);
-            if (nextEl) nextEl.classList.add('phase-active');
+            // Ativa nova fase
+            const el = document.getElementById(`phase${phase}`);
+            if (el) el.classList.add('phase-active');
         };
 
-        window.finishLesson = async () => {
-            utils.showToast("✅ Aula Concluída!", "success");
-            
+        window.skipAudio = () => {
+            window.speechSynthesis.cancel();
+            window.nextPhase(3);
+        };
+
+        window.completeLessonSequence = async () => {
+            // 1. Salvar Progresso
             if (state.user && !state.user.isAnonymous) {
                 try {
-                    const ref = getUserRef(state.user.uid, "progress", window.currentPlayerData.lessonId);
-                    await setDoc(ref, { concluido: true, date: new Date().toISOString() });
-                } catch(e) { console.error("[PROGRESS] Erro ao salvar:", e); }
+                    // Salvar conclusão da aula
+                    await setDoc(getUserRef(state.user.uid, "progress", window.currentPlayerData.lessonId), { 
+                        concluido: true, 
+                        date: new Date().toISOString() 
+                    });
+                    
+                    // Salvar "Continuar de onde parou" (Perfil)
+                    await setDoc(getUserRef(state.user.uid, "profile", "main"), {
+                        lastWatcherLessonId: window.currentPlayerData.lessonId,
+                        lastUpdate: new Date().toISOString()
+                    }, { merge: true });
+                    
+                } catch(e) { console.error("Erro ao salvar progresso", e); }
             }
 
-            if (window.currentPlayerData.nextLessonId) {
-                utils.showToast("Próxima aula em 3s...", "info");
-                setTimeout(() => mainApp.router('player', window.currentPlayerData.nextLessonId), 3000);
-            } else {
-                utils.showToast("Módulo finalizado!", "success");
-                setTimeout(() => mainApp.router('home'), 3000);
-            }
+            // 2. Overlay de Contagem
+            const app = document.getElementById('app');
+            const overlay = document.createElement('div');
+            overlay.id = 'countdownOverlay';
+            overlay.innerHTML = `
+                <div class="text-white text-center">
+                    <h2 class="text-4xl font-bold mb-4">Aula Concluída! 🎉</h2>
+                    <p class="text-xl">Próxima aula em <span id="cnt" class="text-neon-green text-6xl font-black block mt-4">5</span></p>
+                </div>
+            `;
+            app.appendChild(overlay);
+
+            let count = 5;
+            const timer = setInterval(() => {
+                count--;
+                const cntEl = document.getElementById('cnt');
+                if(cntEl) cntEl.innerText = count;
+                
+                if (count <= 0) {
+                    clearInterval(timer);
+                    if (document.getElementById('countdownOverlay')) document.getElementById('countdownOverlay').remove();
+                    
+                    if (window.currentPlayerData.nextLessonId) {
+                        mainApp.router('player', window.currentPlayerData.nextLessonId);
+                    } else {
+                        utils.showToast("Unidade Finalizada!", "success");
+                        mainApp.router('home');
+                    }
+                }
+            }, 1000);
         };
 
-        // Inicialização do Auth Listener
         onAuthStateChanged(auth, (user) => {
             state.user = user;
-            const container = document.getElementById('authContainer');
-            
+            const c = document.getElementById('authContainer');
             if (user) {
-                console.log(`[AUTH] Usuário logado: ${user.email} (Anon: ${user.isAnonymous})`);
-                
-                if (user.isAnonymous) {
-                    state.isAdmin = false;
-                    container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-4 py-2 rounded font-bold hover:bg-red-700 transition shadow-lg shadow-red-900/20">Entrar / Cadastrar</button>`;
+                if(!user.isAnonymous) {
+                    state.isAdmin = user.email.endsWith('@userpro.com');
+                    if(state.isAdmin) document.getElementById('adminBtn').classList.remove('hidden');
+                    c.innerHTML = `<button onclick="authManager.logout()" class="text-sm text-gray-400 hover:text-white">Sair</button>`;
                 } else {
-                    // Check Admin
-                    state.isAdmin = user.email && user.email.endsWith('@userpro.com');
-                    
-                    if (state.isAdmin) {
-                        document.getElementById('adminBtn').classList.remove('hidden');
-                        utils.showToast(`Modo Admin Ativo: ${user.email}`, "success");
-                    } else {
-                        document.getElementById('adminBtn').classList.add('hidden');
-                    }
-
-                    container.innerHTML = `
-                        <div class="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-gray-700">
-                            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                            <span class="text-xs text-gray-300 hidden md:block">${user.email.split('@')[0]}</span>
-                            <button onclick="authManager.logout()" class="text-xs text-gray-400 hover:text-white border-l border-gray-600 pl-3 ml-1">Sair</button>
-                        </div>
-                    `;
+                    c.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-red-600 text-white px-3 py-1 rounded">Entrar</button>`;
                 }
-
-                // Carrega o app se estiver na tela inicial
                 if (state.currentView === 'home') mainApp.init().then(() => mainApp.router('home'));
-
             } else {
-                console.log("[AUTH] Nenhum usuário. Tentando login anônimo...");
-                signInAnonymously(auth).catch(e => {
-                    const ignoredErrors = ['auth/admin-restricted-operation', 'auth/operation-not-allowed'];
-                    if (ignoredErrors.includes(e.code)) {
-                         console.warn("[AUTH] Login anônimo não habilitado. Exibindo opção de login manual.");
-                         // Fallback visual silencioso
-                         container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-4 py-2 rounded font-bold hover:bg-red-700 transition shadow-lg shadow-red-900/20">Entrar</button>`;
-                         
-                         // Se não tiver usuário, ainda tentamos renderizar a home, 
-                         // mas se as regras do Firestore exigirem auth, vai dar erro lá.
-                         // Vamos deixar renderizar e o erro de permissão do Firestore será pego pelo safeAction ou try/catch do renderHome.
-                         if (state.currentView === 'home') mainApp.router('home'); 
-                    } else {
-                        console.error("[AUTH] Erro anônimo:", e);
-                        container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-4 py-2 rounded font-bold">Entrar</button>`;
-                    }
+                signInAnonymously(auth).catch(() => {
+                    c.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-red-600 text-white px-3 py-1 rounded">Entrar</button>`;
                 });
             }
         });
