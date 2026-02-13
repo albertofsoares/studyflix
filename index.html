@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyFlix</title>
+    <title>StudyFlix - Plataforma Robusta</title>
     <link id="favicon" rel="icon" type="image/x-icon" href="">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Quill.js -->
+    <!-- Quill.js (Editor de Texto Rico) -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 
@@ -30,24 +30,27 @@
                             black: '#141414',
                             dark: '#181818',
                             red: '#E50914',
-                            hover: '#2F2F2F'
+                            hover: '#2F2F2F',
+                            input: '#333'
                         },
                         neon: {
                             cyan: '#00f3ff',
                             purple: '#bc13fe',
-                            green: '#39ff14'
+                            green: '#39ff14',
+                            error: '#ff4d4d'
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'fade-in': 'fadeIn 0.3s ease-in-out',
+                        'spin-slow': 'spin 3s linear infinite',
                     },
                     keyframes: {
                         fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
                         }
                     }
                 }
@@ -65,100 +68,167 @@
             overflow-x: hidden;
         }
 
+        /* Scrollbar Customizada */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #141414; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #E50914; }
 
-        .neon-text { text-shadow: 0 0 10px rgba(0, 243, 255, 0.7); }
         .scrolling-wrapper {
             display: flex; flex-wrap: nowrap; overflow-x: auto;
             -webkit-overflow-scrolling: touch; padding-bottom: 20px; scroll-behavior: smooth;
         }
         .scrolling-wrapper::-webkit-scrollbar { display: none; }
         
+        /* Cards */
         .card {
             flex: 0 0 auto; width: 300px; margin-right: 15px;
             background: #181818; border-radius: 4px; position: relative; cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .card:hover { transform: scale(1.05); transition: all 0.3s ease; z-index: 10; }
+        .card:hover { 
+            transform: scale(1.05); 
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+        }
 
+        /* Video Player Ratio */
         .video-container {
             position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
-            border-radius: 8px; border: 1px solid #333;
+            border-radius: 8px; border: 1px solid #333; background: black;
         }
         .video-container iframe, .video-container div { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
+        /* Quill Editor Dark Theme Fix */
         .ql-toolbar { background-color: #e5e5e5; border-radius: 8px 8px 0 0; }
-        .ql-container { color: #e5e5e5; font-size: 16px; border-radius: 0 0 8px 8px; background-color: #2F2F2F; }
+        .ql-container { color: #e5e5e5; font-size: 16px; border-radius: 0 0 8px 8px; background-color: #2F2F2F; border: 1px solid #444; }
+        .ql-editor.ql-blank::before { color: #aaa; font-style: italic; }
         
+        /* Loading Spinner */
         .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid #E50914; border-radius: 50%;
+            border: 4px solid #333; border-top: 4px solid #E50914; border-radius: 50%;
             width: 40px; height: 40px; animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Tabela Admin */
-        .admin-table th { text-align: left; padding: 12px; color: #888; border-bottom: 1px solid #333; }
-        .admin-table td { padding: 12px; border-bottom: 1px solid #222; }
+        /* Admin Table */
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .admin-table th { text-align: left; padding: 12px; color: #888; border-bottom: 2px solid #333; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .admin-table td { padding: 12px; border-bottom: 1px solid #222; vertical-align: middle; }
         .admin-table tr:hover { background-color: #1f1f1f; }
         
+        /* Phases */
         .phase-container { display: none; }
         .phase-active { display: block; animation: fadeIn 0.5s ease-in-out; }
+
+        /* Toast Notification */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            right: 30px;
+            bottom: 30px;
+            font-size: 17px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transform: translateY(100%);
+            transition: transform 0.3s ease, visibility 0.3s;
+            border-left: 5px solid #E50914;
+        }
+        .toast.show {
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .toast.success { border-left-color: #39ff14; }
+        .toast.error { border-left-color: #ff4d4d; }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased selection:bg-netflix-red selection:text-white">
 
     <!-- Navbar -->
-    <nav class="fixed top-0 w-full z-50 bg-gradient-to-b from-black to-transparent px-8 py-4 flex justify-between items-center transition-all duration-300" id="navbar">
+    <nav class="fixed top-0 w-full z-50 bg-gradient-to-b from-black/90 to-transparent backdrop-blur-sm px-8 py-4 flex justify-between items-center transition-all duration-300 border-b border-white/5" id="navbar">
         <div class="flex items-center gap-8">
-            <h1 id="siteBrand" class="text-3xl font-black text-netflix-red tracking-tighter cursor-pointer" onclick="app.router('home')">STUDYFLIX</h1>
-            <ul class="hidden md:flex gap-4 text-sm font-medium text-gray-300">
-                <li class="hover:text-white cursor-pointer transition" onclick="app.router('home')">Início</li>
+            <h1 id="siteBrand" class="text-3xl font-black text-netflix-red tracking-tighter cursor-pointer hover:scale-105 transition" onclick="app.router('home')">STUDYFLIX</h1>
+            <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-300">
+                <li class="hover:text-white cursor-pointer transition font-bold" onclick="app.router('home')">Início</li>
+                <li class="hover:text-white cursor-pointer transition font-bold text-gray-500 cursor-not-allowed">Minha Lista</li>
             </ul>
         </div>
         <div class="flex items-center gap-4">
-            <button id="adminBtn" class="hidden text-neon-cyan border border-neon-cyan px-3 py-1 rounded hover:bg-neon-cyan hover:text-black transition text-xs font-bold uppercase" onclick="app.router('admin')">
-                Painel CMS
+            <button id="adminBtn" class="hidden flex items-center gap-2 text-neon-cyan border border-neon-cyan/50 bg-neon-cyan/10 px-3 py-1.5 rounded hover:bg-neon-cyan hover:text-black transition text-xs font-bold uppercase tracking-wider" onclick="app.router('admin')">
+                <i class="fas fa-cog"></i> CMS Admin
             </button>
-            <div id="authContainer"></div>
+            <div id="authContainer">
+                <!-- Injected via JS -->
+            </div>
         </div>
     </nav>
 
     <!-- App Container -->
-    <main id="app" class="pt-24 min-h-screen px-4 md:px-12 pb-12">
-        <div class="flex justify-center mt-20"><div class="loader"></div></div>
+    <main id="app" class="pt-28 min-h-screen px-4 md:px-12 pb-12 relative">
+        <div class="flex flex-col items-center justify-center mt-20 gap-4">
+            <div class="loader"></div>
+            <p class="text-gray-500 text-sm animate-pulse">Carregando sistema...</p>
+        </div>
     </main>
 
     <!-- Modal de Login -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-80 hidden z-[60] flex items-center justify-center backdrop-blur-sm transition-opacity">
-        <div class="bg-netflix-dark p-8 rounded-lg border border-gray-700 w-full max-w-md relative shadow-2xl">
-            <button onclick="authManager.toggleModal(false)" class="absolute top-3 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-            <h2 class="text-3xl font-bold mb-6 text-white text-center">Acesso</h2>
-            <div class="space-y-4">
-                <input type="email" id="emailInput" placeholder="Email (@userpro.com para admin)" class="w-full p-3 bg-gray-800 text-white rounded border border-gray-600">
-                <input type="password" id="passInput" placeholder="Senha" class="w-full p-3 bg-gray-800 text-white rounded border border-gray-600">
-                <div class="flex gap-3 pt-4">
-                    <button onclick="authManager.handleLogin()" class="flex-1 bg-netflix-red text-white font-bold py-3 rounded hover:bg-red-700 transition">Entrar</button>
-                    <button onclick="authManager.handleRegister()" class="flex-1 border border-gray-500 text-gray-300 font-bold py-3 rounded hover:border-white transition">Cadastrar</button>
+    <div id="loginModal" class="fixed inset-0 bg-black/90 hidden z-[60] flex items-center justify-center backdrop-blur-md transition-opacity duration-300">
+        <div class="bg-[#181818] p-8 rounded-lg border border-gray-700 w-full max-w-md relative shadow-2xl shadow-black">
+            <button onclick="authManager.toggleModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl transition">&times;</button>
+            
+            <h2 class="text-3xl font-bold mb-8 text-white text-center">Acessar Plataforma</h2>
+            
+            <form onsubmit="return false;" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">E-mail</label>
+                    <input type="email" id="emailInput" placeholder="admin@userpro.com" class="w-full p-3 bg-[#333] text-white rounded border border-transparent focus:border-gray-500 focus:bg-[#444] focus:outline-none transition">
                 </div>
-            </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Senha</label>
+                    <input type="password" id="passInput" placeholder="••••••••" class="w-full p-3 bg-[#333] text-white rounded border border-transparent focus:border-gray-500 focus:bg-[#444] focus:outline-none transition">
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button id="btnLogin" onclick="authManager.handleLogin()" class="flex-1 bg-netflix-red text-white font-bold py-3 rounded hover:bg-red-700 transition active:scale-95 disabled:opacity-50 disabled:cursor-wait">
+                        Entrar
+                    </button>
+                    <button id="btnRegister" onclick="authManager.handleRegister()" class="flex-1 border border-gray-500 text-gray-300 font-bold py-3 rounded hover:border-white hover:text-white hover:bg-white/10 transition active:scale-95 disabled:opacity-50 disabled:cursor-wait">
+                        Cadastrar
+                    </button>
+                </div>
+            </form>
+            <p class="text-xs text-gray-500 text-center mt-6">
+                Para gerenciar o conteúdo, faça login com um e-mail 
+                <span class="text-neon-cyan font-mono">@userpro.com</span>
+            </p>
         </div>
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-netflix-dark border-l-4 border-neon-cyan p-4 rounded shadow-2xl transform translate-y-full transition-transform duration-300 z-50">
-        <p id="toastMsg" class="text-white font-bold"></p>
+    <div id="toast" class="toast">
+        <div class="flex items-center gap-3">
+            <i id="toastIcon" class="fas fa-info-circle"></i>
+            <span id="toastMsg" class="font-bold">Notificação</span>
+        </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts Modulares -->
     <script type="module">
+        // ==========================================
+        // 1. CONFIGURAÇÃO E IMPORTS
+        // ==========================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, setDoc, query, where, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
-        // --- FIREBASE CONFIG ---
+        // Configuração Hardcoded (Para fins de demonstração)
         const firebaseConfig = {
             apiKey: "AIzaSyC38VXjnYskoAx5SLF6n3PiEgnaRtz4IJ0",
             authDomain: "studyflix53.firebaseapp.com",
@@ -167,63 +237,146 @@
             messagingSenderId: "799853597162",
             appId: "1:799853597162:web:179f1450c419157d62a293"
         };
+
         const appId = "studyflix53";
+        
+        // Inicialização Services
+        console.log("[INIT] Inicializando Firebase...");
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const storage = getStorage(app);
 
+        // Referências Seguras
         const getColRef = (colName) => collection(db, 'artifacts', appId, 'public', 'data', colName);
         const getDocRef = (colName, docId) => doc(db, 'artifacts', appId, 'public', 'data', colName, docId);
         const getSettingsRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'global');
         const getUserRef = (userId, subCol, docId) => doc(db, 'artifacts', appId, 'users', userId, subCol, docId);
 
-        // --- STATE & UTILS ---
+        // ==========================================
+        // 2. UTILITÁRIOS E SEGURANÇA
+        // ==========================================
+        
+        // Estado Global Reativo
         const state = {
             user: null,
             isAdmin: false,
             currentView: 'home',
             settings: { siteName: "StudyFlix", welcomeMessage: "Aprenda Sem Limites.", favicon: "" },
-            editingId: null // ID do item sendo editado
+            editingId: null,
+            quill: null
         };
 
         const utils = {
-            showToast: (msg) => {
+            // Sistema de Notificação Visual Robusto
+            showToast: (msg, type = 'info') => {
                 const toast = document.getElementById('toast');
-                document.getElementById('toastMsg').innerText = msg;
-                toast.classList.remove('translate-y-full');
-                setTimeout(() => toast.classList.add('translate-y-full'), 3000);
+                const msgEl = document.getElementById('toastMsg');
+                const iconEl = document.getElementById('toastIcon');
+                
+                msgEl.innerText = msg;
+                toast.className = `toast show ${type}`;
+                
+                // Ícones dinâmicos
+                if(type === 'success') iconEl.className = 'fas fa-check-circle';
+                else if(type === 'error') iconEl.className = 'fas fa-exclamation-triangle';
+                else iconEl.className = 'fas fa-info-circle';
+
+                console.log(`[TOAST] [${type.toUpperCase()}] ${msg}`);
+
+                // Auto-hide
+                if (window.toastTimeout) clearTimeout(window.toastTimeout);
+                window.toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 4000);
             },
+
+            // Regex validada para YouTube
             getYouTubeID: (url) => {
                 if (!url) return null;
-                const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+                const match = url.match(regExp);
                 return (match && match[2].length === 11) ? match[2] : null;
             },
+
             stripHtml: (html) => {
-                let tmp = document.createElement("DIV");
+                const tmp = document.createElement("DIV");
                 tmp.innerHTML = html;
-                return tmp.textContent || "";
+                return tmp.textContent || tmp.innerText || "";
+            },
+
+            formatError: (code) => {
+                const errors = {
+                    'auth/invalid-email': 'E-mail inválido.',
+                    'auth/user-not-found': 'Usuário não encontrado.',
+                    'auth/wrong-password': 'Senha incorreta.',
+                    'auth/email-already-in-use': 'E-mail já cadastrado.',
+                    'permission-denied': 'Permissão negada (Firebase Security Rules).',
+                    'storage/unauthorized': 'Sem permissão para upload.',
+                    'auth/admin-restricted-operation': 'Login anônimo desativado. Use E-mail/Senha.'
+                };
+                return errors[code] || `Erro desconhecido: ${code}`;
             }
         };
 
-        // --- APP LOGIC (STARTUP & HOME) ---
+        // WRAPPER DE SEGURANÇA (Pilar 1: Debugging & Tratamento de Erro)
+        // Envolve qualquer ação async, gerencia estado de loading do botão e captura erros
+        async function safeAction(btnId, actionName, asyncFn) {
+            const btn = document.getElementById(btnId);
+            let originalText = "";
+            
+            if (btn) {
+                originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando...`;
+            }
+
+            console.log(`[ACTION START] ${actionName}`);
+
+            try {
+                await asyncFn();
+                console.log(`[ACTION SUCCESS] ${actionName}`);
+            } catch (error) {
+                console.error(`[ACTION ERROR] ${actionName}:`, error);
+                utils.showToast(utils.formatError(error.code) || error.message, 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            }
+        }
+
+        // ==========================================
+        // 3. LÓGICA DE APLICAÇÃO (CORE)
+        // ==========================================
+
         const mainApp = {
             init: async () => {
-                // Carregar Configurações Globais
+                // Carregar configurações globais
                 try {
                     const snap = await getDoc(getSettingsRef());
-                    if (snap.exists()) state.settings = { ...state.settings, ...snap.data() };
+                    if (snap.exists()) {
+                        state.settings = { ...state.settings, ...snap.data() };
+                        console.log("[CONFIG] Configurações carregadas:", state.settings);
+                    }
                     mainApp.applySettings();
-                } catch (e) { console.log("Usando configs padrão"); }
+                } catch (e) {
+                    console.warn("[CONFIG] Usando defaults (primeira execução).");
+                }
             },
 
             applySettings: () => {
                 document.title = state.settings.siteName;
-                document.getElementById('siteBrand').innerText = state.settings.siteName.toUpperCase();
-                if(state.settings.favicon) document.getElementById('favicon').href = state.settings.favicon;
+                const brand = document.getElementById('siteBrand');
+                if (brand) brand.innerText = state.settings.siteName.toUpperCase();
+                
+                const favicon = document.getElementById('favicon');
+                if (state.settings.favicon && favicon) favicon.href = state.settings.favicon;
             },
 
             router: (view, params = null) => {
+                console.log(`[ROUTER] Navegando para: ${view}`);
                 state.currentView = view;
                 const container = document.getElementById('app');
                 window.speechSynthesis.cancel();
@@ -233,9 +386,27 @@
                 else if (view === 'admin') adminManager.init(container);
             },
 
+            // RENDERIZAÇÃO HOME
             renderHome: async (container) => {
-                container.innerHTML = `<div class="flex justify-center mt-20"><div class="loader"></div></div>`;
+                container.innerHTML = `<div class="flex flex-col items-center mt-20"><div class="loader"></div><p class="text-gray-500 mt-4">Carregando catálogo...</p></div>`;
+                
+                // VERIFICAÇÃO DE SEGURANÇA ANTES DO FETCH
+                if (!state.user) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center min-h-[50vh] text-center animate-fade-in p-6">
+                            <h1 class="text-5xl md:text-7xl font-black mb-6 text-white drop-shadow-lg">Bem-vindo ao <span class="text-netflix-red">StudyFlix</span></h1>
+                            <p class="text-xl text-gray-400 max-w-2xl mb-8">Sua plataforma de ensino personalizada. Para acessar o conteúdo exclusivo, é necessário realizar o login.</p>
+                            <button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-8 py-4 rounded text-xl font-bold hover:bg-red-700 transition shadow-lg shadow-red-900/40 transform hover:scale-105">
+                                <i class="fas fa-sign-in-alt mr-2"></i> Acessar Plataforma
+                            </button>
+                            <p class="text-sm text-gray-600 mt-8 max-w-md">Nota: Devido às configurações de segurança do banco de dados, o acesso anônimo está desabilitado. Por favor, crie uma conta ou faça login.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
                 try {
+                    // Fetch Paralelo para performance
                     const [subSnap, unitSnap, lessonSnap] = await Promise.all([
                         getDocs(getColRef("subjects")),
                         getDocs(getColRef("units")),
@@ -243,325 +414,590 @@
                     ]);
 
                     let html = `
-                        <div class="mb-10 animate-fade-in">
-                            <h1 class="text-5xl md:text-7xl font-black mb-4 text-white">${state.settings.welcomeMessage}</h1>
-                            <p class="text-xl text-gray-400 max-w-2xl">Assista aulas como se fossem sua série favorita.</p>
+                        <div class="mb-10 animate-fade-in relative z-10">
+                            <h1 class="text-5xl md:text-7xl font-black mb-4 text-white drop-shadow-lg">${state.settings.welcomeMessage}</h1>
+                            <p class="text-xl text-gray-400 max-w-2xl">Sua plataforma de ensino personalizada.</p>
                         </div>
                     `;
 
-                    if (subSnap.empty) html += `<div class="text-gray-500">Nenhum conteúdo. Acesse o CMS para criar.</div>`;
+                    if (subSnap.empty) {
+                        html += `
+                            <div class="border border-gray-700 bg-gray-800/50 p-8 rounded text-center max-w-lg mx-auto mt-10">
+                                <i class="fas fa-film text-4xl text-gray-600 mb-4"></i>
+                                <h3 class="text-xl font-bold text-white">Catálogo Vazio</h3>
+                                <p class="text-gray-400 mt-2">Acesse o CMS Admin para adicionar conteúdo.</p>
+                            </div>
+                        `;
+                    }
 
+                    // Loop de Matérias
                     subSnap.forEach(sub => {
                         html += `
-                            <div class="flex items-center gap-4 mt-12 mb-4 group cursor-pointer" onclick="window.startSeries('${sub.id}')">
-                                <h2 class="text-3xl font-bold text-white group-hover:text-neon-cyan transition">${sub.data().title}</h2>
-                                <div class="bg-netflix-red text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition"><i class="fas fa-play"></i> INICIAR</div>
-                            </div>`;
+                            <div class="mt-12 mb-4 animate-fade-in">
+                                <div class="flex items-center gap-4 group cursor-pointer w-fit" onclick="window.startSeries('${sub.id}')">
+                                    <h2 class="text-2xl font-bold text-white group-hover:text-neon-cyan transition">${sub.data().title}</h2>
+                                    <span class="text-xs font-bold bg-netflix-red text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition transform translate-x-[-10px] group-hover:translate-x-0">
+                                        <i class="fas fa-play mr-1"></i> INICIAR JORNADA
+                                    </span>
+                                </div>
+                            </div>
+                        `;
                         
                         const subUnits = unitSnap.docs.filter(u => u.data().subjectId === sub.id);
+                        
+                        if(subUnits.length === 0) html += `<p class="text-gray-600 italic text-sm ml-4">Sem unidades cadastradas.</p>`;
+
+                        // Loop de Unidades
                         subUnits.forEach(unit => {
-                            html += `<div class="mb-6 ml-4"><h3 class="text-lg text-gray-400 mb-2 uppercase tracking-widest text-sm font-bold">${unit.data().title}</h3><div class="scrolling-wrapper">`;
+                            html += `
+                                <div class="mb-8 ml-4 border-l-2 border-gray-800 pl-4">
+                                    <h3 class="text-gray-400 mb-3 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                        <i class="fas fa-layer-group"></i> ${unit.data().title}
+                                    </h3>
+                                    <div class="scrolling-wrapper pb-4">
+                            `;
                             
                             const unitLessons = lessonSnap.docs.filter(l => l.data().unitId === unit.id);
+                            
+                            if(unitLessons.length === 0) html += `<span class="text-gray-700 text-sm italic p-2">Em breve...</span>`;
+
+                            // Loop de Aulas
                             unitLessons.forEach(lesson => {
                                 const ytId = utils.getYouTubeID(lesson.data().videoUrl);
-                                const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : 'https://placehold.co/300x169';
+                                const thumb = ytId 
+                                    ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` 
+                                    : 'https://placehold.co/300x169/333/999?text=Sem+Imagem';
+                                
                                 html += `
-                                    <div class="card card-hover" onclick="window.playLesson('${lesson.id}')">
-                                        <div class="h-40 overflow-hidden rounded-t"><img src="${thumb}" class="w-full h-full object-cover opacity-80 hover:opacity-100 transition"></div>
-                                        <div class="p-3"><h4 class="text-white font-bold text-sm truncate">${lesson.data().title}</h4></div>
+                                    <div class="card group" onclick="window.playLesson('${lesson.id}')">
+                                        <div class="h-40 overflow-hidden rounded-t relative">
+                                            <img src="${thumb}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500">
+                                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                                <i class="fas fa-play-circle text-5xl text-white drop-shadow-lg"></i>
+                                            </div>
+                                        </div>
+                                        <div class="p-4 bg-[#181818]">
+                                            <h4 class="text-white font-bold text-sm truncate">${lesson.data().title}</h4>
+                                            <div class="flex justify-between items-center mt-2">
+                                                <span class="text-[10px] text-gray-500 uppercase">Aula</span>
+                                                <i class="fas fa-chevron-right text-gray-600 text-xs"></i>
+                                            </div>
+                                        </div>
                                     </div>`;
                             });
                             html += `</div></div>`;
                         });
                     });
                     container.innerHTML = html;
-                } catch (e) { container.innerHTML = `<p class="text-red-500">Erro: ${e.message}</p>`; }
+                    console.log("[HOME] Renderização concluída.");
+                } catch (e) { 
+                    console.error(e);
+                    // Falha silenciosa para mostrar home vazia caso não tenha permissão ainda
+                    if(e.code && e.code.includes('permission-denied')) {
+                         container.innerHTML = `<div class="text-center mt-20 p-6 bg-gray-900 rounded max-w-md mx-auto border border-gray-800">
+                            <i class="fas fa-lock text-4xl text-neon-cyan mb-4"></i><br>
+                            <h3 class="text-white font-bold text-xl mb-2">Acesso Restrito</h3>
+                            <p class="text-gray-400 mb-6">Faça login para visualizar o conteúdo.</p>
+                            <button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-6 py-2 rounded font-bold hover:bg-red-700 transition">Fazer Login</button>
+                         </div>`;
+                    } else {
+                        container.innerHTML = `<div class="text-center text-red-500 mt-20"><i class="fas fa-bug text-4xl mb-4"></i><br>Erro crítico ao carregar home.<br>${e.message}</div>`; 
+                    }
+                }
             },
 
-            // --- PLAYER LÓGICA (Simplificada para brevidade, mantém a lógica anterior) ---
+            // LÓGICA DO PLAYER (State Machine)
             renderPlayer: async (container, lessonId) => {
-                // ... (Lógica do Player mantida intacta, apenas recuperando dados)
-                // Usando a estrutura de fases anterior
-                const docSnap = await getDoc(getDocRef("lessons", lessonId));
-                if (!docSnap.exists()) return container.innerHTML = "Erro.";
-                const data = docSnap.data();
-                const ytId = utils.getYouTubeID(data.videoUrl);
-
-                // Buscar unidade para navegação
-                const unitLessonsSnap = await getDocs(query(getColRef("lessons"), where("unitId", "==", data.unitId)));
-                const unitLessons = unitLessonsSnap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.createdAt.localeCompare(b.createdAt));
-                const currentIndex = unitLessons.findIndex(l => l.id === lessonId);
-                const nextLessonId = (currentIndex !== -1 && currentIndex < unitLessons.length - 1) ? unitLessons[currentIndex + 1].id : null;
+                container.innerHTML = `<div class="flex justify-center mt-20"><div class="loader"></div></div>`;
                 
-                window.currentLessonId = lessonId;
-                window.nextLessonId = nextLessonId;
-                window.hasFile = !!data.fileUrl;
+                try {
+                    const docSnap = await getDoc(getDocRef("lessons", lessonId));
+                    if (!docSnap.exists()) return container.innerHTML = "<div class='text-center text-white mt-20'>Aula não encontrada.</div>";
+                    
+                    const data = docSnap.data();
+                    const ytId = utils.getYouTubeID(data.videoUrl);
+                    
+                    // Prepara navegação (Next Lesson)
+                    const allLessonsSnap = await getDocs(query(getColRef("lessons"), where("unitId", "==", data.unitId)));
+                    const lessons = allLessonsSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                    // Sort simples por criação (idealmente ter um campo 'order')
+                    lessons.sort((a,b) => a.createdAt.localeCompare(b.createdAt));
+                    
+                    const currentIndex = lessons.findIndex(l => l.id === lessonId);
+                    const nextLessonId = (currentIndex < lessons.length - 1) ? lessons[currentIndex + 1].id : null;
 
-                container.innerHTML = `
-                    <div class="max-w-5xl mx-auto animate-fade-in relative min-h-[80vh] flex flex-col justify-center">
-                        <div class="absolute top-0 left-0 w-full flex justify-between items-center mb-6 z-10">
-                            <button onclick="app.router('home')" class="text-gray-400 hover:text-white flex items-center gap-2"><i class="fas fa-arrow-left"></i> Sair</button>
-                            <span class="text-sm text-gray-500 uppercase font-bold tracking-widest">Aula ${currentIndex+1}/${unitLessons.length}</span>
-                        </div>
-                        <div id="phase1" class="phase-container phase-active w-full">
-                            <h1 class="text-3xl font-bold mb-4 text-white text-center">${data.title}</h1>
-                            <div class="video-container mx-auto"><div id="yt-player"></div></div>
-                        </div>
-                        <div id="phase2" class="phase-container w-full text-center">
-                            <h2 class="text-3xl font-bold mb-8 text-white">Leitura 📚</h2>
-                            ${data.fileUrl ? `<a href="${data.fileUrl}" target="_blank" class="bg-white text-black px-6 py-3 rounded font-bold hover:bg-gray-200 transition mb-6 inline-block">Abrir Material</a>` : '<p class="text-gray-500 mb-8">Sem anexo.</p>'}
-                            <br><button onclick="window.nextPhase(3)" class="bg-neon-cyan text-black font-bold px-8 py-3 rounded-full hover:bg-cyan-300 transition">Ouvir Resumo <i class="fas fa-arrow-right ml-2"></i></button>
-                        </div>
-                        <div id="phase3" class="phase-container w-full">
-                            <div class="max-w-3xl mx-auto bg-netflix-dark p-8 rounded-lg border border-neon-purple">
-                                <h2 class="text-2xl font-bold text-white mb-4 animate-pulse">🔊 Ouvindo...</h2>
-                                <div id="summaryText" class="prose prose-invert text-gray-300 mb-6">${data.summary || "Sem resumo."}</div>
+                    // Globais de controle
+                    window.currentPlayerData = { lessonId, nextLessonId, hasFile: !!data.fileUrl };
+
+                    container.innerHTML = `
+                        <div class="max-w-6xl mx-auto animate-fade-in relative min-h-[85vh] flex flex-col">
+                            <!-- Header de Navegação -->
+                            <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                                <button onclick="app.router('home')" class="text-gray-400 hover:text-white flex items-center gap-2 transition hover:-translate-x-1">
+                                    <i class="fas fa-arrow-left"></i> Voltar ao Menu
+                                </button>
+                                <div class="text-right">
+                                    <h2 class="text-white font-bold text-lg">${data.title}</h2>
+                                    <span class="text-xs text-gray-500 uppercase tracking-widest">Aula ${currentIndex+1} de ${lessons.length}</span>
+                                </div>
+                            </div>
+
+                            <!-- FASE 1: VÍDEO -->
+                            <div id="phase1" class="phase-container phase-active w-full flex-1 flex flex-col justify-center">
+                                <div class="video-container mx-auto shadow-2xl shadow-purple-900/10 w-full max-w-4xl">
+                                    <div id="yt-player"></div>
+                                </div>
+                                <div class="mt-6 text-center">
+                                    <p class="text-gray-400 animate-pulse text-sm"><i class="fas fa-eye"></i> Assista até o fim para liberar o material.</p>
+                                    <!-- Bypass para dev/demo -->
+                                    <button onclick="window.nextPhase(2)" class="mt-4 text-xs text-gray-600 hover:text-white underline">Pular Vídeo (Dev Mode)</button>
+                                </div>
+                            </div>
+
+                            <!-- FASE 2: LEITURA -->
+                            <div id="phase2" class="phase-container w-full text-center py-10">
+                                <i class="fas fa-book-reader text-6xl text-neon-cyan mb-6 animate-bounce"></i>
+                                <h2 class="text-4xl font-bold mb-4 text-white">Momento de Estudo</h2>
+                                <p class="text-gray-400 mb-8 max-w-xl mx-auto">Revise o material complementar antes de prosseguir para o resumo final.</p>
+                                
+                                ${data.fileUrl ? `
+                                    <a href="${data.fileUrl}" target="_blank" class="inline-flex items-center gap-3 bg-gray-800 border border-gray-600 text-white px-8 py-4 rounded-lg hover:bg-gray-700 hover:border-white transition transform hover:scale-105 shadow-lg mb-8">
+                                        <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
+                                        <div class="text-left">
+                                            <div class="font-bold">Abrir Material de Apoio</div>
+                                            <div class="text-xs text-gray-400">Clique para visualizar</div>
+                                        </div>
+                                    </a>
+                                ` : `
+                                    <div class="bg-gray-800/50 p-4 rounded inline-block mb-8 border border-gray-700">
+                                        <i class="fas fa-info-circle text-gray-500"></i> Nenhum anexo para esta aula.
+                                    </div>
+                                `}
+                                
+                                <div>
+                                    <button onclick="window.nextPhase(3)" class="bg-neon-cyan text-black font-black px-10 py-4 rounded-full hover:bg-cyan-300 transition shadow-[0_0_20px_rgba(0,243,255,0.4)] flex items-center gap-3 mx-auto">
+                                        CONCLUIR LEITURA <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- FASE 3: RESUMO E CONCLUSÃO -->
+                            <div id="phase3" class="phase-container w-full py-10">
+                                <div class="max-w-3xl mx-auto">
+                                    <div class="flex items-center gap-4 mb-6">
+                                        <div class="w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_red]"></div>
+                                        <h2 class="text-3xl font-bold text-white">Resumo Inteligente</h2>
+                                    </div>
+                                    
+                                    <div class="bg-[#1a1a1a] p-8 rounded-xl border border-neon-purple/30 shadow-[0_0_40px_rgba(188,19,254,0.1)] relative overflow-hidden">
+                                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-neon-purple to-transparent opacity-50"></div>
+                                        
+                                        <div id="summaryText" class="prose prose-invert prose-lg text-gray-300 leading-relaxed min-h-[100px]">
+                                            ${data.summary || "<p>Nenhum resumo disponível para leitura automática.</p>"}
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-8 text-center">
+                                        <p class="text-sm text-gray-500 italic mb-4">O sistema finalizará a aula automaticamente após a leitura.</p>
+                                        <button onclick="window.speechSynthesis.cancel(); window.finishLesson()" class="text-red-500 hover:text-white underline text-sm">Parar Áudio e Concluir Agora</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
 
-                if (window.YT && window.YT.Player) {
-                    new YT.Player('yt-player', {
-                        height: '100%', width: '100%', videoId: ytId,
-                        playerVars: { 'autoplay': 1, 'controls': 1 },
-                        events: { 'onStateChange': (e) => { if (e.data === YT.PlayerState.ENDED) window.nextPhase(2); } }
-                    });
+                    // Init YouTube API
+                    if (window.YT && window.YT.Player) {
+                        new YT.Player('yt-player', {
+                            height: '100%', width: '100%', videoId: ytId,
+                            playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0 },
+                            events: {
+                                'onStateChange': (e) => {
+                                    if (e.data === YT.PlayerState.ENDED) {
+                                        console.log("[PLAYER] Vídeo finalizado.");
+                                        window.nextPhase(2);
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                } catch (e) {
+                    console.error(e);
+                    container.innerHTML = `<div class="text-red-500 text-center mt-20">Erro ao carregar player: ${e.message}</div>`;
+                }
+            },
+            
+            // Auto-Roteamento
+            startSeries: async (subjectId) => {
+                utils.showToast("Localizando primeira aula...", "info");
+                try {
+                    const unitsSnap = await getDocs(query(getColRef("units"), where("subjectId", "==", subjectId)));
+                    if(unitsSnap.empty) throw new Error("Matéria sem unidades.");
+                    
+                    // Pega primeira unidade
+                    const firstUnit = unitsSnap.docs[0]; // Simplificado (deveria ordenar)
+                    
+                    const lessonSnap = await getDocs(query(getColRef("lessons"), where("unitId", "==", firstUnit.id)));
+                    if(lessonSnap.empty) throw new Error("Unidade sem aulas.");
+                    
+                    // Pega primeira aula
+                    const lessons = lessonSnap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => a.createdAt.localeCompare(b.createdAt));
+                    
+                    mainApp.router('player', lessons[0].id);
+
+                } catch (error) {
+                    utils.showToast(error.message, 'error');
                 }
             }
         };
 
-        // --- ADMIN / CMS LOGIC (REFATORADO) ---
+        // ==========================================
+        // 4. ADMINISTRAÇÃO & CMS (CORREÇÃO CRÍTICA)
+        // ==========================================
+
         const adminManager = {
             init: (container) => {
                 if (!state.isAdmin) return mainApp.router('home');
-                state.editingId = null; // Reset edit state
                 
                 container.innerHTML = `
-                    <div class="max-w-6xl mx-auto">
-                        <h2 class="text-4xl font-bold mb-8 text-neon-cyan">Sistema de Gestão (CMS)</h2>
-                        <div class="flex gap-4 mb-8 border-b border-gray-700 pb-4 overflow-x-auto">
-                            <button onclick="window.renderAdminTab('settings')" class="text-white hover:text-neon-purple font-bold px-4 py-2 bg-gray-800 rounded">⚙️ Configurações</button>
-                            <button onclick="window.renderAdminTab('subject')" class="text-white hover:text-neon-purple font-bold px-4 py-2 bg-gray-800 rounded">📚 Matérias</button>
-                            <button onclick="window.renderAdminTab('unit')" class="text-white hover:text-neon-purple font-bold px-4 py-2 bg-gray-800 rounded">📑 Unidades</button>
-                            <button onclick="window.renderAdminTab('lesson')" class="text-white hover:text-neon-purple font-bold px-4 py-2 bg-gray-800 rounded">🎥 Aulas</button>
+                    <div class="max-w-7xl mx-auto animate-fade-in">
+                        <header class="mb-8 flex flex-col md:flex-row justify-between items-end border-b border-gray-800 pb-6 gap-4">
+                            <div>
+                                <h2 class="text-4xl font-black text-white mb-2">CMS <span class="text-neon-cyan">ADMIN</span></h2>
+                                <p class="text-gray-400">Gerencie todo o conteúdo da plataforma em tempo real.</p>
+                            </div>
+                            <div class="flex gap-2 bg-gray-900 p-1 rounded-lg border border-gray-700">
+                                <button onclick="window.renderAdminTab('settings')" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white rounded hover:bg-gray-800 transition">Configurações</button>
+                                <button onclick="window.renderAdminTab('subject')" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white rounded hover:bg-gray-800 transition">Matérias</button>
+                                <button onclick="window.renderAdminTab('unit')" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white rounded hover:bg-gray-800 transition">Unidades</button>
+                                <button onclick="window.renderAdminTab('lesson')" class="tab-btn px-4 py-2 text-sm font-bold text-gray-400 hover:text-white rounded hover:bg-gray-800 transition">Aulas</button>
+                            </div>
+                        </header>
+                        <div id="adminContent" class="bg-[#181818] border border-gray-800 rounded-xl p-6 min-h-[500px] relative shadow-2xl">
+                            <!-- Conteúdo injetado via JS -->
                         </div>
-                        <div id="adminContent" class="bg-netflix-dark p-6 rounded-lg shadow-lg min-h-[400px]"></div>
                     </div>
                 `;
-                window.renderAdminTab('settings'); // Default tab
+                window.renderAdminTab('settings');
             },
 
-            // Renderiza o conteúdo da aba selecionada
             renderTab: async (type) => {
                 const content = document.getElementById('adminContent');
-                content.innerHTML = '<div class="loader mx-auto"></div>';
-                state.editingId = null; // Reset ao trocar de aba
-
-                if (type === 'settings') {
-                    // TAB CONFIGURAÇÕES
-                    content.innerHTML = `
-                        <h3 class="text-2xl font-bold mb-6 text-white border-l-4 border-neon-purple pl-3">Identidade do Site</h3>
-                        <form onsubmit="window.saveSettings(event)" class="space-y-6 max-w-2xl">
-                            <div>
-                                <label class="block text-gray-400 text-sm mb-2">Nome do Site (Título)</label>
-                                <input type="text" id="siteName" value="${state.settings.siteName}" class="w-full p-3 bg-black border border-gray-700 rounded text-white" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-400 text-sm mb-2">Mensagem de Boas-vindas</label>
-                                <input type="text" id="welcomeMsg" value="${state.settings.welcomeMessage}" class="w-full p-3 bg-black border border-gray-700 rounded text-white" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-400 text-sm mb-2">URL do Favicon</label>
-                                <input type="url" id="faviconUrl" value="${state.settings.favicon || ''}" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
-                            </div>
-                            <button type="submit" class="bg-neon-purple px-6 py-2 rounded font-bold text-white hover:bg-purple-700 w-full">Salvar Configurações</button>
-                        </form>
-                    `;
-                } else {
-                    // TABS DE CONTEÚDO (Subject, Unit, Lesson)
-                    let formHtml = '';
-                    let listHtml = `<div class="mt-12"><h3 class="text-xl font-bold mb-4 text-gray-300">Itens Cadastrados</h3><div class="overflow-x-auto"><table class="w-full admin-table text-sm text-gray-400"><thead><tr><th>ID</th><th>Título</th><th>Ações</th></tr></thead><tbody>`;
-                    
-                    // Fetch Data for List
-                    const collectionName = type + 's'; // subject -> subjects
-                    const snapshot = await getDocs(getColRef(collectionName));
-                    const items = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-
-                    // Generate Form HTML
-                    if (type === 'subject') {
-                        formHtml = `
-                            <form onsubmit="window.handleSave(event, 'subject')" class="space-y-4 border-b border-gray-700 pb-8">
-                                <h3 class="text-xl font-bold" id="formTitle">Nova Matéria</h3>
-                                <input type="text" id="title" placeholder="Nome da Matéria" class="w-full p-3 bg-black border border-gray-700 rounded text-white" required>
-                                <button type="submit" id="submitBtn" class="bg-neon-cyan text-black px-6 py-2 rounded font-bold">Criar Matéria</button>
-                                <button type="button" onclick="window.renderAdminTab('subject')" class="hidden text-red-500 ml-4 underline" id="cancelBtn">Cancelar</button>
-                            </form>`;
-                    } else if (type === 'unit') {
-                        const subs = await getDocs(getColRef("subjects"));
-                        const subOptions = subs.docs.map(d => `<option value="${d.id}">${d.data().title}</option>`).join('');
-                        formHtml = `
-                            <form onsubmit="window.handleSave(event, 'unit')" class="space-y-4 border-b border-gray-700 pb-8">
-                                <h3 class="text-xl font-bold" id="formTitle">Nova Unidade</h3>
-                                <select id="subjectId" class="w-full p-3 bg-black border border-gray-700 rounded text-white" required>${subOptions}</select>
-                                <input type="text" id="title" placeholder="Nome da Unidade" class="w-full p-3 bg-black border border-gray-700 rounded text-white" required>
-                                <button type="submit" id="submitBtn" class="bg-neon-cyan text-black px-6 py-2 rounded font-bold">Criar Unidade</button>
-                                <button type="button" onclick="window.renderAdminTab('unit')" class="hidden text-red-500 ml-4 underline" id="cancelBtn">Cancelar</button>
-                            </form>`;
-                    } else if (type === 'lesson') {
-                        const units = await getDocs(getColRef("units"));
-                        const unitOptions = units.docs.map(d => `<option value="${d.id}">${d.data().title}</option>`).join('');
-                        formHtml = `
-                            <form onsubmit="window.handleSave(event, 'lesson')" class="space-y-4 border-b border-gray-700 pb-8">
-                                <h3 class="text-xl font-bold" id="formTitle">Nova Aula</h3>
-                                <select id="unitId" class="w-full p-3 bg-black border border-gray-700 rounded text-white" required>${unitOptions}</select>
-                                <input type="text" id="title" placeholder="Título da Aula" class="w-full p-3 bg-black border border-gray-700 rounded text-white" required>
-                                <input type="url" id="videoUrl" placeholder="URL do YouTube" class="w-full p-3 bg-black border border-gray-700 rounded text-white" required>
-                                <div id="editor" class="h-48 bg-gray-800 text-white"></div>
-                                <input type="file" id="fileInput" class="w-full text-gray-400 mt-2">
-                                <button type="submit" id="submitBtn" class="bg-neon-cyan text-black px-6 py-2 rounded font-bold mt-4">Criar Aula</button>
-                                <button type="button" onclick="window.renderAdminTab('lesson')" class="hidden text-red-500 ml-4 underline" id="cancelBtn">Cancelar</button>
-                            </form>`;
+                content.innerHTML = '<div class="absolute inset-0 flex items-center justify-center bg-[#181818] z-10"><div class="loader"></div></div>';
+                
+                state.editingId = null; // Reset estado de edição
+                
+                // Highlight Tab
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    if(b.innerText.toLowerCase().includes(type === 'subject' ? 'matérias' : type === 'unit' ? 'unidades' : type === 'lesson' ? 'aulas' : 'configurações')) {
+                        b.classList.add('bg-neon-cyan', 'text-black');
+                        b.classList.remove('text-gray-400', 'hover:bg-gray-800');
+                    } else {
+                        b.classList.remove('bg-neon-cyan', 'text-black');
+                        b.classList.add('text-gray-400');
                     }
+                });
 
-                    // Generate List HTML
-                    items.forEach(item => {
-                        listHtml += `
-                            <tr>
-                                <td class="font-mono text-xs text-gray-600">${item.id.substring(0,6)}...</td>
-                                <td class="font-bold text-white">${item.title}</td>
-                                <td>
-                                    <button onclick="window.editItem('${type}', '${item.id}')" class="text-neon-cyan hover:underline mr-3">Editar</button>
-                                    <button onclick="window.deleteItem('${collectionName}', '${item.id}', '${type}')" class="text-red-500 hover:underline">Excluir</button>
-                                </td>
-                            </tr>
+                try {
+                    if (type === 'settings') {
+                        content.innerHTML = `
+                            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2"><i class="fas fa-sliders-h"></i> Parâmetros Globais</h3>
+                            <form onsubmit="return false;" class="max-w-2xl space-y-6">
+                                <div>
+                                    <label class="block text-gray-500 text-xs font-bold uppercase mb-2">Nome da Plataforma</label>
+                                    <input type="text" id="siteName" value="${state.settings.siteName}" class="w-full p-3 bg-black border border-gray-700 rounded text-white focus:border-neon-cyan focus:outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-500 text-xs font-bold uppercase mb-2">Mensagem de Boas-vindas</label>
+                                    <input type="text" id="welcomeMsg" value="${state.settings.welcomeMessage}" class="w-full p-3 bg-black border border-gray-700 rounded text-white focus:border-neon-cyan focus:outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-500 text-xs font-bold uppercase mb-2">URL do Favicon</label>
+                                    <input type="url" id="faviconUrl" value="${state.settings.favicon || ''}" class="w-full p-3 bg-black border border-gray-700 rounded text-white focus:border-neon-cyan focus:outline-none transition">
+                                </div>
+                                <button id="btnSettings" onclick="window.saveSettings()" class="bg-neon-purple text-white px-6 py-3 rounded font-bold hover:bg-purple-700 transition flex items-center gap-2">
+                                    <i class="fas fa-save"></i> Salvar Alterações
+                                </button>
+                            </form>
                         `;
-                    });
-                    listHtml += '</tbody></table></div></div>';
+                    } else {
+                        // GENERIC CRUD UI
+                        const collectionName = type + 's';
+                        const snapshot = await getDocs(getColRef(collectionName));
+                        const items = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
 
-                    content.innerHTML = formHtml + listHtml;
-                    if(type === 'lesson') window.quillEditor = new Quill('#editor', { theme: 'snow' });
+                        let formHtml = '';
+                        
+                        // Form Builder Baseado no Tipo
+                        if (type === 'subject') {
+                            formHtml = `
+                                <div class="grid gap-4">
+                                    <input type="text" id="title" placeholder="Nome da Matéria (Ex: Matemática)" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
+                                </div>`;
+                        } else if (type === 'unit') {
+                            const subjects = await getDocs(getColRef('subjects'));
+                            const opts = subjects.docs.map(d => `<option value="${d.id}">${d.data().title}</option>`).join('');
+                            formHtml = `
+                                <div class="grid gap-4">
+                                    <select id="subjectId" class="w-full p-3 bg-black border border-gray-700 rounded text-white">${opts || '<option>Crie uma matéria primeiro</option>'}</select>
+                                    <input type="text" id="title" placeholder="Nome da Unidade (Ex: Álgebra I)" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
+                                </div>`;
+                        } else if (type === 'lesson') {
+                            const units = await getDocs(getColRef('units'));
+                            const opts = units.docs.map(d => `<option value="${d.id}">${d.data().title}</option>`).join('');
+                            formHtml = `
+                                <div class="grid gap-4">
+                                    <select id="unitId" class="w-full p-3 bg-black border border-gray-700 rounded text-white">${opts || '<option>Crie uma unidade primeiro</option>'}</select>
+                                    <input type="text" id="title" placeholder="Título da Aula" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
+                                    <input type="url" id="videoUrl" placeholder="Link YouTube (Qualquer formato)" class="w-full p-3 bg-black border border-gray-700 rounded text-white">
+                                    
+                                    <div class="bg-gray-900 rounded border border-gray-700">
+                                        <div id="editor" class="h-40 text-gray-300"></div>
+                                    </div>
+
+                                    <div class="border border-dashed border-gray-600 rounded p-4 text-center hover:bg-gray-800 transition relative">
+                                        <input type="file" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                        <div id="fileLabel" class="text-gray-400 text-sm"><i class="fas fa-cloud-upload-alt mr-2"></i> Arraste PDF ou Áudio (Opcional)</div>
+                                    </div>
+                                </div>`;
+                        }
+
+                        content.innerHTML = `
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <!-- Coluna Formulário -->
+                                <div class="lg:col-span-1 border-r border-gray-800 pr-6">
+                                    <h3 class="text-xl font-bold text-white mb-4" id="formHeader">Novo Item</h3>
+                                    <form onsubmit="return false;" class="space-y-4">
+                                        ${formHtml}
+                                        <div class="flex gap-2 pt-2">
+                                            <button id="btnSave" onclick="window.handleSave('${type}')" class="flex-1 bg-neon-cyan text-black font-bold py-3 rounded hover:bg-cyan-300 transition">
+                                                <i class="fas fa-plus-circle"></i> Criar
+                                            </button>
+                                            <button id="btnCancel" onclick="window.renderAdminTab('${type}')" class="hidden px-4 text-red-500 font-bold hover:bg-red-500/10 rounded">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Coluna Lista -->
+                                <div class="lg:col-span-2">
+                                    <h3 class="text-xl font-bold text-gray-400 mb-4 flex justify-between">
+                                        Registros <span class="text-xs bg-gray-800 px-2 py-1 rounded">${items.length}</span>
+                                    </h3>
+                                    <div class="overflow-x-auto max-h-[600px] overflow-y-auto rounded border border-gray-800">
+                                        <table class="admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="pl-4">Título</th>
+                                                    <th>ID</th>
+                                                    <th class="text-right pr-4">Ações</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${items.map(item => `
+                                                    <tr>
+                                                        <td class="pl-4 font-medium text-white">${item.title}</td>
+                                                        <td class="text-gray-600 font-mono text-xs">${item.id.substring(0,6)}...</td>
+                                                        <td class="text-right pr-4">
+                                                            <button onclick="window.editItem('${type}', '${item.id}')" class="text-neon-cyan hover:bg-cyan-900/30 p-2 rounded transition mr-1" title="Editar"><i class="fas fa-edit"></i></button>
+                                                            <button onclick="window.deleteItem('${type}', '${item.id}')" class="text-red-500 hover:bg-red-900/30 p-2 rounded transition" title="Excluir"><i class="fas fa-trash"></i></button>
+                                                        </td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                        ${items.length === 0 ? '<div class="p-8 text-center text-gray-600">Nenhum item encontrado.</div>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Init Quill APÓS o DOM existir (Critical Fix)
+                        if (type === 'lesson') {
+                            state.quill = new Quill('#editor', {
+                                theme: 'snow',
+                                placeholder: 'Escreva o resumo da aula aqui...',
+                                modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'header': 1 }, { 'header': 2 }], ['code-block']] }
+                            });
+                            
+                            // File Input listener para feedback visual
+                            document.getElementById('fileInput').addEventListener('change', (e) => {
+                                const label = document.getElementById('fileLabel');
+                                if (e.target.files[0]) {
+                                    label.innerHTML = `<span class="text-neon-cyan"><i class="fas fa-check"></i> ${e.target.files[0].name}</span>`;
+                                }
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
+                    utils.showToast("Erro ao carregar aba Admin.", "error");
                 }
             },
 
-            // Salvar Configurações Globais
-            saveSettings: async (e) => {
-                e.preventDefault();
-                const settings = {
-                    siteName: document.getElementById('siteName').value,
-                    welcomeMessage: document.getElementById('welcomeMsg').value,
-                    favicon: document.getElementById('faviconUrl').value
-                };
+            // Create / Update Logic com Debug
+            handleSave: async (type) => {
+                await safeAction('btnSave', `Salvar ${type}`, async () => {
+                    const collectionName = type + 's';
+                    const isEdit = !!state.editingId;
+                    
+                    // Validação Básica
+                    const titleEl = document.getElementById('title');
+                    if (!titleEl || !titleEl.value.trim()) throw new Error("O campo Título é obrigatório.");
+
+                    const data = {
+                        title: titleEl.value,
+                        updatedAt: new Date().toISOString()
+                    };
+
+                    if (!isEdit) data.createdAt = new Date().toISOString();
+
+                    // Validações Específicas
+                    if (type === 'unit') {
+                        data.subjectId = document.getElementById('subjectId').value;
+                    }
+                    else if (type === 'lesson') {
+                        data.unitId = document.getElementById('unitId').value;
+                        const videoUrl = document.getElementById('videoUrl').value;
+                        if (!utils.getYouTubeID(videoUrl)) throw new Error("URL do YouTube inválida.");
+                        data.videoUrl = videoUrl;
+                        
+                        // Quill Content
+                        if (state.quill) {
+                            data.summary = state.quill.root.innerHTML;
+                        }
+
+                        // Upload de Arquivo (Storage)
+                        const fileInput = document.getElementById('fileInput');
+                        if (fileInput && fileInput.files[0]) {
+                            const file = fileInput.files[0];
+                            console.log(`[UPLOAD] Iniciando upload de: ${file.name}`);
+                            
+                            // Visual feedback
+                            document.getElementById('fileLabel').innerText = "Enviando arquivo... (Aguarde)";
+                            
+                            const fileRef = ref(storage, `materials/${Date.now()}_${file.name}`);
+                            await uploadBytes(fileRef, file);
+                            data.fileUrl = await getDownloadURL(fileRef);
+                            
+                            console.log(`[UPLOAD] Sucesso. URL: ${data.fileUrl}`);
+                        }
+                    }
+
+                    // Firestore Action
+                    if (isEdit) {
+                        await updateDoc(getDocRef(collectionName, state.editingId), data);
+                        utils.showToast("Item atualizado com sucesso!", "success");
+                    } else {
+                        await addDoc(getColRef(collectionName), data);
+                        utils.showToast("Item criado com sucesso!", "success");
+                    }
+
+                    // Reload UI
+                    window.renderAdminTab(type);
+                });
+            },
+
+            editItem: async (type, id) => {
+                state.editingId = id;
+                const collectionName = type + 's';
+                
+                // Feedback visual de carregamento
+                utils.showToast("Carregando dados para edição...", "info");
+
                 try {
+                    const docSnap = await getDoc(getDocRef(collectionName, id));
+                    if (!docSnap.exists()) throw new Error("Item não encontrado.");
+                    const data = docSnap.data();
+
+                    // Preenche campos
+                    document.getElementById('title').value = data.title;
+                    if (type === 'unit') document.getElementById('subjectId').value = data.subjectId;
+                    if (type === 'lesson') {
+                        document.getElementById('unitId').value = data.unitId;
+                        document.getElementById('videoUrl').value = data.videoUrl;
+                        if (state.quill) state.quill.root.innerHTML = data.summary || "";
+                        if (data.fileUrl) document.getElementById('fileLabel').innerText = "Arquivo já anexado (envie outro para substituir)";
+                    }
+
+                    // Muda estado do form
+                    document.getElementById('formHeader').innerText = "Editando Item";
+                    const btnSave = document.getElementById('btnSave');
+                    btnSave.innerHTML = `<i class="fas fa-save"></i> Atualizar`;
+                    btnSave.classList.replace('bg-neon-cyan', 'bg-neon-green');
+                    document.getElementById('btnCancel').classList.remove('hidden');
+
+                } catch (e) {
+                    utils.showToast(e.message, 'error');
+                }
+            },
+
+            deleteItem: async (type, id) => {
+                if (!confirm("Tem certeza? Esta ação é irreversível.")) return;
+                
+                await safeAction(null, `Excluir ${type}`, async () => {
+                    await deleteDoc(getDocRef(type + 's', id));
+                    utils.showToast("Item excluído permanentemente.", "success");
+                    window.renderAdminTab(type);
+                });
+            },
+
+            saveSettings: async () => {
+                await safeAction('btnSettings', 'Salvar Configurações', async () => {
+                    const settings = {
+                        siteName: document.getElementById('siteName').value,
+                        welcomeMessage: document.getElementById('welcomeMsg').value,
+                        favicon: document.getElementById('faviconUrl').value
+                    };
                     await setDoc(getSettingsRef(), settings);
                     state.settings = settings;
                     mainApp.applySettings();
-                    utils.showToast("Configurações salvas!");
-                } catch(err) { utils.showToast("Erro ao salvar."); }
-            },
-
-            // CRUD Genérico (Create/Update)
-            handleSave: async (e, type) => {
-                e.preventDefault();
-                const isEdit = !!state.editingId;
-                const collectionName = type + 's';
-                
-                // Coleta dados básicos
-                let data = {
-                    title: document.getElementById('title').value,
-                    createdAt: new Date().toISOString() // Em edit, idealmente manteria a data original, mas simplificando
-                };
-
-                // Coleta dados específicos
-                if (type === 'unit') data.subjectId = document.getElementById('subjectId').value;
-                if (type === 'lesson') {
-                    data.unitId = document.getElementById('unitId').value;
-                    data.videoUrl = document.getElementById('videoUrl').value;
-                    data.summary = window.quillEditor.root.innerHTML;
-                    
-                    const fileInput = document.getElementById('fileInput');
-                    if (fileInput.files[0]) {
-                        const fileRef = ref(storage, `materials/${Date.now()}_${fileInput.files[0].name}`);
-                        await uploadBytes(fileRef, fileInput.files[0]);
-                        data.fileUrl = await getDownloadURL(fileRef);
-                    }
-                }
-
-                try {
-                    if (isEdit) {
-                        // UPDATE
-                        // Se for edit, não sobrescrever createdAt se quiser manter ordem, mas aqui atualizamos
-                        const docRef = getDocRef(collectionName, state.editingId);
-                        // Se for lesson e não houve upload, manter fileUrl antigo (necessário lógica extra, simplificado aqui)
-                        await updateDoc(docRef, data);
-                        utils.showToast("Item atualizado!");
-                    } else {
-                        // CREATE
-                        await addDoc(getColRef(collectionName), data);
-                        utils.showToast("Item criado!");
-                    }
-                    window.renderAdminTab(type); // Reload list and form
-                } catch (err) { console.error(err); utils.showToast("Erro ao salvar."); }
-            },
-
-            // Preparar UI para Edição
-            editItem: async (type, id) => {
-                const docSnap = await getDoc(getDocRef(type + 's', id));
-                if (!docSnap.exists()) return;
-                const data = docSnap.data();
-
-                state.editingId = id; // Set edit mode
-                
-                // Atualizar UI do form
-                document.getElementById('formTitle').innerText = `Editar ${type} (ID: ${id.substring(0,4)}...)`;
-                document.getElementById('submitBtn').innerText = "Atualizar";
-                document.getElementById('submitBtn').classList.replace('bg-neon-cyan', 'bg-neon-green');
-                document.getElementById('cancelBtn').classList.remove('hidden');
-
-                // Preencher campos
-                document.getElementById('title').value = data.title;
-                if (type === 'unit') document.getElementById('subjectId').value = data.subjectId;
-                if (type === 'lesson') {
-                    document.getElementById('unitId').value = data.unitId;
-                    document.getElementById('videoUrl').value = data.videoUrl;
-                    window.quillEditor.root.innerHTML = data.summary || "";
-                }
-                
-                // Scroll para o form
-                document.getElementById('navbar').scrollIntoView();
-            },
-
-            deleteItem: async (collectionName, id, type) => {
-                if (confirm("Tem certeza que deseja excluir? Isso não pode ser desfeito.")) {
-                    try {
-                        await deleteDoc(getDocRef(collectionName, id));
-                        utils.showToast("Item excluído.");
-                        window.renderAdminTab(type);
-                    } catch (err) { utils.showToast("Erro ao excluir."); }
-                }
+                    utils.showToast("Configurações aplicadas!", "success");
+                });
             }
         };
 
-        // --- GLOBAL BINDINGS ---
+        // ==========================================
+        // 5. BINDINGS E EVENTOS GLOBAIS
+        // ==========================================
+
         window.app = mainApp;
+        
+        // Auth Bindings
         window.authManager = {
-            toggleModal: (s) => document.getElementById('loginModal').classList.toggle('hidden', !s),
+            toggleModal: (show) => {
+                const modal = document.getElementById('loginModal');
+                if (show) modal.classList.remove('hidden');
+                else modal.classList.add('hidden');
+            },
             handleLogin: async () => {
-                try {
-                    await signInWithEmailAndPassword(auth, document.getElementById('emailInput').value, document.getElementById('passInput').value);
-                    document.getElementById('loginModal').classList.add('hidden');
-                } catch(e) { utils.showToast(e.message); }
+                const email = document.getElementById('emailInput').value;
+                const pass = document.getElementById('passInput').value;
+                await safeAction('btnLogin', 'Login', async () => {
+                    if (!email || !pass) throw new Error("Preencha todos os campos.");
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    window.authManager.toggleModal(false);
+                    utils.showToast("Login efetuado com sucesso!", "success");
+                });
             },
             handleRegister: async () => {
-                try {
-                    await createUserWithEmailAndPassword(auth, document.getElementById('emailInput').value, document.getElementById('passInput').value);
-                    document.getElementById('loginModal').classList.add('hidden');
-                } catch(e) { utils.showToast(e.message); }
+                const email = document.getElementById('emailInput').value;
+                const pass = document.getElementById('passInput').value;
+                await safeAction('btnRegister', 'Cadastro', async () => {
+                    if (!email || !pass) throw new Error("Preencha todos os campos.");
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                    window.authManager.toggleModal(false);
+                    utils.showToast("Conta criada! Bem-vindo.", "success");
+                });
             },
-            logout: async () => { await signOut(auth); window.location.reload(); }
+            logout: async () => {
+                await signOut(auth);
+                window.location.reload();
+            }
         };
-        
+
         // Admin Bindings
         window.renderAdminTab = adminManager.renderTab;
         window.saveSettings = adminManager.saveSettings;
@@ -570,48 +1006,112 @@
         window.deleteItem = adminManager.deleteItem;
         
         // Navigation Bindings
+        window.startSeries = mainApp.startSeries;
         window.playLesson = (id) => mainApp.router('player', id);
-        window.startSeries = mainApp.startSeries;
-        window.nextPhase = window.nextPhase; // Mantendo binding anterior se existir
-        window.startSeries = mainApp.startSeries;
 
-        // Player Logic Aux (Globals para o HTML acessar)
+        // Player Phase Control
         window.nextPhase = (phase) => {
+            // Remove active class
             document.querySelectorAll('.phase-container').forEach(el => el.classList.remove('phase-active'));
-            if(phase === 2 && !window.hasFile) return window.nextPhase(3);
-            if(phase === 3) {
-                const text = utils.stripHtml(document.getElementById('summaryText').innerHTML);
-                const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'pt-BR';
-                u.onend = async () => {
-                    utils.showToast("Aula Concluída!");
-                    if(state.user && !state.user.isAnonymous) await setDoc(getUserRef(state.user.uid, "progress", window.currentLessonId), {concluido:true});
-                    if(window.nextLessonId) mainApp.router('player', window.nextLessonId);
-                    else mainApp.router('home');
-                };
-                speechSynthesis.speak(u);
+            
+            // Logic Phase 2 (Leitura)
+            if (phase === 2 && !window.currentPlayerData.hasFile) {
+                console.log("[PLAYER] Sem arquivo, pulando para Fase 3.");
+                return window.nextPhase(3);
             }
-            document.getElementById(`phase${phase}`).classList.add('phase-active');
+
+            // Logic Phase 3 (Resumo)
+            if (phase === 3) {
+                const text = utils.stripHtml(document.getElementById('summaryText').innerHTML);
+                if (text && text.trim().length > 10) {
+                    console.log("[TTS] Iniciando leitura...");
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.lang = 'pt-BR';
+                    u.rate = 1.1;
+                    u.onend = window.finishLesson;
+                    speechSynthesis.speak(u);
+                } else {
+                    console.log("[TTS] Texto insuficiente, finalizando.");
+                    setTimeout(window.finishLesson, 2000);
+                }
+            }
+
+            // Activate new phase
+            const nextEl = document.getElementById(`phase${phase}`);
+            if (nextEl) nextEl.classList.add('phase-active');
         };
 
-        // Start
-        mainApp.init();
+        window.finishLesson = async () => {
+            utils.showToast("✅ Aula Concluída!", "success");
+            
+            if (state.user && !state.user.isAnonymous) {
+                try {
+                    const ref = getUserRef(state.user.uid, "progress", window.currentPlayerData.lessonId);
+                    await setDoc(ref, { concluido: true, date: new Date().toISOString() });
+                } catch(e) { console.error("[PROGRESS] Erro ao salvar:", e); }
+            }
 
-        // Auth Listener
+            if (window.currentPlayerData.nextLessonId) {
+                utils.showToast("Próxima aula em 3s...", "info");
+                setTimeout(() => mainApp.router('player', window.currentPlayerData.nextLessonId), 3000);
+            } else {
+                utils.showToast("Módulo finalizado!", "success");
+                setTimeout(() => mainApp.router('home'), 3000);
+            }
+        };
+
+        // Inicialização do Auth Listener
         onAuthStateChanged(auth, (user) => {
             state.user = user;
             const container = document.getElementById('authContainer');
+            
             if (user) {
-                if(user.isAnonymous) {
-                     container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-netflix-red px-4 py-1 rounded text-white font-bold">Entrar</button>`;
+                console.log(`[AUTH] Usuário logado: ${user.email} (Anon: ${user.isAnonymous})`);
+                
+                if (user.isAnonymous) {
+                    state.isAdmin = false;
+                    container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-4 py-2 rounded font-bold hover:bg-red-700 transition shadow-lg shadow-red-900/20">Entrar / Cadastrar</button>`;
                 } else {
+                    // Check Admin
                     state.isAdmin = user.email && user.email.endsWith('@userpro.com');
-                    document.getElementById('adminBtn').classList.toggle('hidden', !state.isAdmin);
-                    container.innerHTML = `<button onclick="authManager.logout()" class="text-gray-400 hover:text-white">Sair (${user.email.split('@')[0]})</button>`;
+                    
+                    if (state.isAdmin) {
+                        document.getElementById('adminBtn').classList.remove('hidden');
+                        utils.showToast(`Modo Admin Ativo: ${user.email}`, "success");
+                    } else {
+                        document.getElementById('adminBtn').classList.add('hidden');
+                    }
+
+                    container.innerHTML = `
+                        <div class="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-gray-700">
+                            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                            <span class="text-xs text-gray-300 hidden md:block">${user.email.split('@')[0]}</span>
+                            <button onclick="authManager.logout()" class="text-xs text-gray-400 hover:text-white border-l border-gray-600 pl-3 ml-1">Sair</button>
+                        </div>
+                    `;
                 }
-                if(state.currentView === 'home' && !user.isAnonymous) mainApp.renderHome(document.getElementById('app'));
+
+                // Carrega o app se estiver na tela inicial
+                if (state.currentView === 'home') mainApp.init().then(() => mainApp.router('home'));
+
             } else {
-                signInAnonymously(auth).catch(e => console.log("Anon auth fail", e));
+                console.log("[AUTH] Nenhum usuário. Tentando login anônimo...");
+                signInAnonymously(auth).catch(e => {
+                    const ignoredErrors = ['auth/admin-restricted-operation', 'auth/operation-not-allowed'];
+                    if (ignoredErrors.includes(e.code)) {
+                         console.warn("[AUTH] Login anônimo não habilitado. Exibindo opção de login manual.");
+                         // Fallback visual silencioso
+                         container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-4 py-2 rounded font-bold hover:bg-red-700 transition shadow-lg shadow-red-900/20">Entrar</button>`;
+                         
+                         // Se não tiver usuário, ainda tentamos renderizar a home, 
+                         // mas se as regras do Firestore exigirem auth, vai dar erro lá.
+                         // Vamos deixar renderizar e o erro de permissão do Firestore será pego pelo safeAction ou try/catch do renderHome.
+                         if (state.currentView === 'home') mainApp.router('home'); 
+                    } else {
+                        console.error("[AUTH] Erro anônimo:", e);
+                        container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-4 py-2 rounded font-bold">Entrar</button>`;
+                    }
+                });
             }
         });
 
