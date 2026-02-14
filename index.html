@@ -311,16 +311,19 @@
         // --- 3. CORE LOGIC (Router & Init) ---
         const Core = {
             init: async () => {
-                // Carregamento Inicial Blindado
+                // Carregamento Inicial Blindado (CORREÇÃO AQUI)
                 try {
                     Logger.add("Iniciando sistema...");
-                    const settingsSnap = await getDoc(DAL.getSettingsRef());
                     
-                    if (settingsSnap.exists()) {
-                        state.settings = { ...state.settings, ...settingsSnap.data() };
-                        Logger.add("Configurações carregadas.");
-                    } else {
-                        Logger.add("Configurações padrão aplicadas.", "warning");
+                    // Tentar buscar configs, se falhar (permissão de convidado), segue com defaults
+                    try {
+                        const settingsSnap = await getDoc(DAL.getSettingsRef());
+                        if (settingsSnap.exists()) {
+                            state.settings = { ...state.settings, ...settingsSnap.data() };
+                            Logger.add("Configurações carregadas.");
+                        }
+                    } catch (configError) {
+                        Logger.add("Visitante detectado. Usando configurações padrão.", "warning");
                     }
                     
                     Core.applySettings();
@@ -330,17 +333,11 @@
                     document.getElementById('navbar').classList.remove('opacity-0');
                     document.getElementById('app').classList.remove('opacity-0');
                     
-                    // Route initial
-                    if (!state.user) {
-                        // Tentar auth anonimo silencioso se config permitir, senao ficar na home publica
-                        signInAnonymously(auth).catch(() => Logger.add("Auth anônimo restrito.", "warning"));
-                    }
-                    
                     Core.router('home');
 
                 } catch (e) {
                     Logger.add(`Falha crítica de inicialização: ${e.message}`, "error");
-                    document.querySelector('#splashScreen p').innerText = "Erro de Conexão. Recarregue a página.";
+                    document.querySelector('#splashScreen p').innerText = "Erro Crítico. Recarregue a página.";
                     document.querySelector('#splashScreen p').classList.add('text-red-500');
                 }
             },
@@ -370,6 +367,7 @@
             renderHome: async (container) => {
                 container.innerHTML = `<div class="flex flex-col items-center mt-32"><div class="loader-spinner"></div><p class="mt-4 text-gray-500 animate-pulse">Buscando catálogo...</p></div>`;
                 
+                // SEÇÃO DE BOAS VINDAS (Visitantes)
                 if (!state.user) {
                     container.innerHTML = `
                         <div class="flex flex-col items-center justify-center min-h-[60vh] text-center animate-slide-up">
@@ -970,7 +968,10 @@
             } else {
                 // If logged out completely
                 container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="text-xs bg-netflix-red text-white px-3 py-1 rounded">Entrar</button>`;
-                if (!document.getElementById('splashScreen').classList.contains('pointer-events-none')) Core.init();
+                // Apenas inicia se o splash ainda estiver ativo (primeiro load)
+                if (!document.getElementById('splashScreen').classList.contains('pointer-events-none')) {
+                    Core.init();
+                }
             }
         });
 
