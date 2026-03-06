@@ -3,978 +3,599 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyFlix</title>
-    <link id="favicon" rel="icon" type="image/x-icon" href="">
+    <title>Lumina | Estética Avançada e Beleza</title>
+    <meta name="description" content="Realce sua beleza natural com tratamentos estéticos de alto padrão.">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts para um visual Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
-    <!-- Quill.js -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-
-    <!-- YouTube API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Configuração de Design System -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        netflix: {
-                            black: '#141414',
-                            dark: '#181818',
-                            card: '#1f1f1f',
-                            red: '#E50914',
-                            redHover: '#b20710',
-                            input: '#333'
-                        },
-                        neon: {
-                            cyan: '#00f3ff',
-                            purple: '#bc13fe',
-                            green: '#39ff14',
-                            error: '#ff4d4d'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-out',
-                        'slide-up': 'slideUp 0.5s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        /* Paleta de Cores Premium (Nude, Dourado e Off-white) */
+        :root {
+            --primary-gold: #D4AF37;
+            --primary-dark: #B5952F;
+            --bg-light: #FAF9F6;
+            --bg-nude: #F3EBE1;
+            --text-dark: #2C2C2C;
+            --text-light: #5A5A5A;
+            --white: #FFFFFF;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
-            background-color: #141414;
-            color: #e5e5e5;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #141414; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #E50914; }
-
-        /* Componentes Específicos */
-        .scrolling-wrapper {
-            display: flex; flex-wrap: nowrap; overflow-x: auto;
-            -webkit-overflow-scrolling: touch; padding-bottom: 20px; scroll-behavior: smooth;
-        }
-        .scrolling-wrapper::-webkit-scrollbar { display: none; }
-        
-        .card-zoom {
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-        }
-        .card-zoom:hover { 
-            transform: scale(1.05); 
-            z-index: 20;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
         }
 
-        .video-wrapper {
-            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
-            border-radius: 12px; background: black; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        a { text-decoration: none; color: inherit; }
 
-        /* Quill Customization */
-        .ql-toolbar { background-color: #e5e5e5; border-radius: 8px 8px 0 0; border: none !important;}
-        .ql-container { color: #e5e5e5; font-size: 16px; border-radius: 0 0 8px 8px; background-color: #1f1f1f; border: 1px solid #333 !important; border-top: none !important; }
-        
-        /* Loaders & Splashes */
-        .loader-spinner {
-            border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #E50914; border-radius: 50%;
-            width: 50px; height: 50px; animation: spin 1s linear infinite;
+        /* Utilitários */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 5%;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .glass-overlay {
-            background: rgba(0, 0, 0, 0.7);
+        .section-padding {
+            padding: 100px 0;
+        }
+
+        .text-center { text-align: center; }
+
+        /* Botões */
+        .btn {
+            display: inline-block;
+            padding: 16px 32px;
+            background-color: var(--primary-gold);
+            color: var(--white);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 3px;
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary-gold);
+            color: var(--primary-gold);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-gold);
+            color: var(--white);
+        }
+
+        /* Header / Nav */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 0;
+            background-color: rgba(250, 249, 246, 0.95);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: var(--transition);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* Admin Visual Logger */
-        .admin-logger {
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            line-height: 1.4;
+        header.scrolled {
+            padding: 10px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
         }
-        .log-entry { border-bottom: 1px solid #333; padding: 4px 0; display: flex; gap: 8px; }
-        .log-time { color: #666; }
-        .log-info { color: #00f3ff; }
-        .log-error { color: #ff4d4d; }
-        .log-success { color: #39ff14; }
 
-        .active-admin-item {
-            border-left: 4px solid #00f3ff;
-            background-color: rgba(0, 243, 255, 0.05);
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-gold);
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-gold);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(rgba(250, 249, 246, 0.8), rgba(250, 249, 246, 0.9)), url('https://images.unsplash.com/photo-1600334129128-6850558b5b5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 650px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .hero h1 span {
+            color: var(--primary-gold);
+            font-style: italic;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        /* Tratamentos (Serviços) */
+        .services {
+            background-color: var(--white);
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .section-header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: var(--bg-light);
+            padding: 40px 30px;
+            border-radius: 8px;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .service-card:hover {
+            background: var(--white);
+            transform: translateY(-10px);
+            border-color: rgba(212, 175, 55, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .service-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--primary-gold);
+        }
+
+        .service-card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* Sobre (Autoridade) */
+        .about {
+            background-color: var(--bg-nude);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .about-image {
+            position: relative;
+        }
+
+        .about-image img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .about-image::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--primary-gold);
+            border-radius: 8px;
+            z-index: -1;
+        }
+
+        .about-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .about-text p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .signature {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--primary-gold);
+            font-style: italic;
+            margin-top: 30px;
+        }
+
+        /* Prova Social (Depoimentos) */
+        .testimonials {
+            background-color: var(--white);
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .testimonial-card {
+            padding: 40px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .quote-icon {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: var(--primary-gold);
+            opacity: 0.2;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            line-height: 1;
+        }
+
+        .testimonial-card p {
+            font-style: italic;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .client-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        /* CTA Final */
+        .cta-section {
+            background: var(--primary-gold);
+            color: var(--white);
+            text-align: center;
+            padding: 80px 5%;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--white);
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-section .btn {
+            background-color: var(--white);
+            color: var(--primary-gold);
+        }
+
+        .cta-section .btn:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-dark);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--text-dark);
+            color: var(--white);
+            padding: 60px 0 20px;
+            text-align: center;
+        }
+
+        footer p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+        }
+
+        /* Botão Flutuante WhatsApp */
+        .whatsapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 40px;
+            right: 40px;
+            background-color: #25d366;
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+        }
+
+        /* Animações (Scroll Reveal) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .nav-links { display: none; } /* Menu hamburguer iria aqui */
+            .about-grid { grid-template-columns: 1fr; }
+            .hero { text-align: center; }
+            .hero-content { margin: 0 auto; }
+            .about-image::before { display: none; }
         }
     </style>
 </head>
-<body class="antialiased selection:bg-netflix-red selection:text-white">
+<body>
 
-    <!-- 1. SPLASH SCREEN (Initial Loading) -->
-    <div id="splashScreen" class="fixed inset-0 z-[100] bg-netflix-black flex flex-col items-center justify-center transition-opacity duration-700">
-        <h1 class="text-6xl font-black text-netflix-red tracking-tighter mb-8 animate-pulse">STUDYFLIX</h1>
-        <div class="loader-spinner"></div>
-        <p class="text-gray-500 mt-4 text-sm font-medium tracking-widest uppercase">Carregando Experiência</p>
-    </div>
-
-    <!-- 2. NAVBAR -->
-    <nav id="navbar" class="fixed top-0 w-full z-50 bg-gradient-to-b from-black/90 to-transparent backdrop-blur-sm px-6 md:px-12 py-4 flex justify-between items-center transition-all duration-300 border-b border-white/5 opacity-0">
-        <div class="flex items-center gap-8">
-            <h1 id="brandLogo" class="text-2xl md:text-3xl font-black text-netflix-red tracking-tighter cursor-pointer hover:scale-105 transition" onclick="app.router('home')">STUDYFLIX</h1>
-            <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-300">
-                <li class="hover:text-white cursor-pointer transition" onclick="app.router('home')">Início</li>
-                <li class="hover:text-white cursor-pointer transition text-gray-600 cursor-not-allowed">Minha Lista</li>
-            </ul>
+    <!-- Cabeçalho -->
+    <header id="header">
+        <div class="container nav-container">
+            <a href="#" class="logo">LUMINA</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#home">Início</a></li>
+                    <li><a href="#tratamentos">Tratamentos</a></li>
+                    <li><a href="#sobre">A Clínica</a></li>
+                    <li><a href="#depoimentos">Depoimentos</a></li>
+                </ul>
+            </nav>
+            <a href="#contato" class="btn btn-outline" style="padding: 10px 20px; font-size: 0.75rem;">Agendar Avaliação</a>
         </div>
-        <div class="flex items-center gap-4">
-            <button id="adminBtn" class="hidden flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neon-cyan border border-neon-cyan/30 bg-neon-cyan/5 px-3 py-1.5 rounded hover:bg-neon-cyan hover:text-black transition" onclick="app.router('admin')">
-                <i class="fas fa-terminal"></i> Admin
-            </button>
-            <div id="authContainer"></div>
-        </div>
-    </nav>
+    </header>
 
-    <!-- 3. MAIN APP AREA -->
-    <main id="app" class="pt-24 min-h-screen px-4 md:px-12 pb-24 relative opacity-0 transition-opacity duration-500">
-        <!-- Views Rendered Here -->
-    </main>
-
-    <!-- 4. MODALS & OVERLAYS -->
-    
-    <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 z-[60] flex items-center justify-center hidden glass-overlay transition-opacity duration-300">
-        <div class="bg-netflix-dark border border-gray-700 rounded-xl p-8 w-full max-w-md shadow-2xl relative transform scale-95 transition-transform duration-300" id="loginCard">
-            <button onclick="authManager.toggleModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-            <h2 class="text-3xl font-bold mb-2 text-white text-center">Entrar</h2>
-            <p class="text-gray-400 text-center mb-8 text-sm">Acesse para salvar seu progresso.</p>
-            
-            <form onsubmit="return false;" class="space-y-4">
-                <div class="group">
-                    <input type="email" id="emailInput" required class="w-full bg-[#333] text-white p-4 rounded border border-transparent focus:border-gray-500 focus:bg-[#444] outline-none transition peer" placeholder=" ">
-                    <label class="absolute left-12 top-[128px] text-gray-400 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-[132px] peer-focus:top-[115px] peer-focus:text-xs pointer-events-none hidden">Email</label> <!-- Simplificado placeholder -->
+    <!-- Hero Section (Dobra Principal) -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content reveal">
+                <h1>Revele a sua <span>melhor versão</span> com elegância.</h1>
+                <p>Tratamentos estéticos de alta performance que realçam sua beleza única, devolvem a firmeza da pele e elevam sua autoestima. Resultados naturais e sofisticados.</p>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <a href="#contato" class="btn">Falar com Especialista</a>
+                    <a href="#tratamentos" class="btn btn-outline" style="background: transparent; border-color: var(--text-dark); color: var(--text-dark);">Conhecer Procedimentos</a>
                 </div>
-                <div class="group">
-                    <input type="password" id="passInput" required placeholder="Senha" class="w-full bg-[#333] text-white p-4 rounded border border-transparent focus:border-gray-500 focus:bg-[#444] outline-none transition">
-                </div>
-                <div class="flex gap-3 pt-4">
-                    <button id="btnLogin" onclick="authManager.handleLogin()" class="flex-1 bg-netflix-red text-white font-bold py-3 rounded hover:bg-netflix-redHover transition shadow-lg">Entrar</button>
-                    <button id="btnReg" onclick="authManager.handleRegister()" class="flex-1 border border-gray-600 text-gray-300 font-bold py-3 rounded hover:border-white hover:text-white transition">Cadastrar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Countdown Overlay (Cinematic) -->
-    <div id="countdownOverlay" class="fixed inset-0 z-[70] hidden glass-overlay flex-col items-center justify-center text-center">
-        <div class="animate-slide-up">
-            <h2 class="text-5xl font-black text-white mb-2">AULA CONCLUÍDA</h2>
-            <p class="text-xl text-gray-300 mb-8">Próximo episódio começando em...</p>
-            <div class="relative w-32 h-32 flex items-center justify-center mx-auto">
-                <svg class="absolute inset-0 w-full h-full rotate-[-90deg]" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#333" stroke-width="8" />
-                    <circle id="timerCircle" cx="50" cy="50" r="45" fill="none" stroke="#E50914" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="0" class="transition-all duration-1000 ease-linear" />
-                </svg>
-                <span id="countdownText" class="text-5xl font-bold text-white">5</span>
             </div>
-            <button onclick="window.cancelAutoPlay()" class="mt-8 text-gray-400 hover:text-white underline text-sm tracking-widest uppercase">Cancelar Reprodução</button>
         </div>
-    </div>
+    </section>
 
-    <!-- Global Toast -->
-    <div id="toast" class="fixed bottom-8 right-8 z-[80] translate-y-24 transition-transform duration-300 bg-white text-black px-6 py-4 rounded shadow-2xl flex items-center gap-4 border-l-8 border-netflix-red max-w-sm">
-        <i id="toastIcon" class="fas fa-info-circle text-xl"></i>
-        <p id="toastMsg" class="font-bold text-sm">Notificação</p>
-    </div>
+    <!-- Seção de Serviços -->
+    <section id="tratamentos" class="services section-padding">
+        <div class="container">
+            <div class="section-header text-center reveal">
+                <h2>Protocolos Exclusivos</h2>
+                <p>Tecnologia de ponta aliada à expertise médica para resultados impecáveis.</p>
+            </div>
+            
+            <div class="services-grid">
+                <!-- Card 1 -->
+                <div class="service-card reveal">
+                    <div class="service-icon">✨</div>
+                    <h3>Harmonização Facial</h3>
+                    <p>Equilíbrio e simetria para o seu rosto. Realçamos seus traços naturais com preenchedores de ácido hialurônico da mais alta qualidade, sem exageros.</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="service-card reveal" style="transition-delay: 0.1s;">
+                    <div class="service-icon">🧬</div>
+                    <h3>Bioestimuladores de Colágeno</h3>
+                    <p>Combate à flacidez de dentro para fora. Tratamento inovador que devolve a firmeza e o contorno facial, promovendo um efeito lifting natural e duradouro.</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="service-card reveal" style="transition-delay: 0.2s;">
+                    <div class="service-icon">💧</div>
+                    <h3>Toxina Botulínica (Botox)</h3>
+                    <p>Prevenção e suavização de rugas e linhas de expressão. Uma aparência descansada e rejuvenescida, mantendo a naturalidade dos seus movimentos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <!-- --- JAVASCRIPT CORE --- -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, setDoc, query, where, orderBy, deleteDoc, limit } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    <!-- Seção Sobre (Autoridade) -->
+    <section id="sobre" class="about section-padding">
+        <div class="container about-grid">
+            <div class="about-image reveal">
+                <!-- Imagem ilustrativa de uma clínica elegante ou profissional -->
+                <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Dra. Especialista em Estética">
+            </div>
+            <div class="about-text reveal">
+                <h2>A Arte de Cuidar da Sua Beleza</h2>
+                <p>Na Lumina, acreditamos que a estética vai muito além da aparência; trata-se de resgatar o amor próprio. Sob a direção da Dra. Helena Albuquerque, com mais de 10 anos de experiência em dermatologia estética avançada, nossa clínica tornou-se referência em naturalidade.</p>
+                <p>Não transformamos rostos em moldes padronizados. Estudamos a sua anatomia, entendemos os seus desejos e criamos um plano de tratamento exclusivo para que você se olhe no espelho e reconheça a sua versão mais radiante.</p>
+                <div class="signature">Dra. Helena Albuquerque</div>
+                <p style="font-size: 0.8rem; margin-top: 5px;">CRM 12345 | RQE 6789</p>
+            </div>
+        </div>
+    </section>
 
-        // --- 1. CONFIGURAÇÃO & DAL (Data Abstraction Layer) ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyC38VXjnYskoAx5SLF6n3PiEgnaRtz4IJ0",
-            authDomain: "studyflix53.firebaseapp.com",
-            projectId: "studyflix53",
-            storageBucket: "studyflix53.firebasestorage.app",
-            messagingSenderId: "799853597162",
-            appId: "1:799853597162:web:179f1450c419157d62a293"
-        };
+    <!-- Prova Social -->
+    <section id="depoimentos" class="testimonials section-padding">
+        <div class="container">
+            <div class="section-header text-center reveal">
+                <h2>O Que Nossas Pacientes Dizem</h2>
+                <p>A maior recompensa é a confiança de quem já transformou sua autoestima conosco.</p>
+            </div>
+            
+            <div class="testimonial-grid">
+                <div class="testimonial-card reveal">
+                    <span class="quote-icon">"</span>
+                    <p>Fiz o protocolo de bioestimulador e o resultado foi incrível! Minha pele voltou a ter vida e firmeza. O atendimento da clínica é impecável, me senti uma rainha.</p>
+                    <div class="client-name">Camila Resende</div>
+                </div>
+                <div class="testimonial-card reveal" style="transition-delay: 0.1s;">
+                    <span class="quote-icon">"</span>
+                    <p>Sempre tive medo de ficar artificial com a harmonização, mas a Dra. Helena tem mãos de fada. Ficou super natural, só recebo elogios e ninguém percebe o que fiz.</p>
+                    <div class="client-name">Juliana Fontes</div>
+                </div>
+                <div class="testimonial-card reveal" style="transition-delay: 0.2s;">
+                    <span class="quote-icon">"</span>
+                    <p>A estrutura da clínica é de primeiro mundo. O botox não dói nada e durou muito mais do que nos lugares que eu ia antes. Recomendo de olhos fechados!</p>
+                    <div class="client-name">Mariana Costa</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const APP_ID = "studyflix53"; // Constante para caminhos
+    <!-- Call to Action Final -->
+    <section class="cta-section reveal">
+        <div class="container">
+            <h2>Sua jornada para a beleza atemporal começa aqui.</h2>
+            <p>Agende uma avaliação personalizada e descubra o protocolo ideal para as necessidades da sua pele. Vagas limitadas para este mês.</p>
+            <a href="#contato" class="btn">Agendar Minha Avaliação pelo WhatsApp</a>
+        </div>
+    </section>
 
-        // Camada de Abstração para resolver caminhos complexos do ambiente
-        // Para o desenvolvedor, parece que estamos acessando coleções raiz.
-        const DAL = {
-            getCollection: (name) => collection(db, 'artifacts', APP_ID, 'public', 'data', name),
-            getDoc: (colName, id) => doc(db, 'artifacts', APP_ID, 'public', 'data', colName, id),
-            getUserDoc: (userId, subCol, id) => doc(db, 'artifacts', APP_ID, 'users', userId, subCol, id),
-            getSettingsRef: () => doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'global')
-        };
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <h2 style="font-family: 'Playfair Display', serif; color: var(--primary-gold); font-size: 2rem; margin-bottom: 20px;">LUMINA</h2>
+            <p style="border: none; margin-top: 0; padding-top: 0;">Av. Paulista, 1000 - Conjunto 502, Jardins - SP</p>
+            <p style="border: none; margin-top: 5px; padding-top: 0;">(11) 99999-9999 | contato@luminaestetica.com.br</p>
+            <p>&copy; 2026 Lumina Estética Avançada. Todos os direitos reservados. Desenvolvido por <strong>Sua Agência</strong>.</p>
+        </div>
+    </footer>
 
-        // --- 2. STATE MANAGEMENT & LOGGER ---
-        const state = {
-            user: null,
-            isAdmin: false,
-            currentView: 'splash',
-            settings: { siteName: "StudyFlix", welcomeMessage: "Loading...", favicon: "" },
-            editingId: null,
-            logs: [] // Visual Logger Store
-        };
+    <!-- Botão Flutuante do WhatsApp -->
+    <!-- Substitua o SEU_NUMERO pelo número com código do país e DDD, ex: 5511999999999 -->
+    <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20agendar%20uma%20avaliação%20na%20Lumina." target="_blank" class="whatsapp-float">
+        <!-- Ícone SVG do WhatsApp -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+        </svg>
+    </a>
 
-        // Visual Logger System
-        const Logger = {
-            add: (msg, type = 'info') => {
-                const entry = { time: new Date().toLocaleTimeString(), msg, type };
-                state.logs.unshift(entry);
-                if (state.logs.length > 50) state.logs.pop();
-                
-                // Console fallback
-                const style = type === 'error' ? 'background: #500; color: #fff' : 'background: #222; color: #bada55';
-                console.log(`%c[${type.toUpperCase()}] ${msg}`, style);
-
-                // Update Admin UI if active
-                if (document.getElementById('adminLogsContainer')) Logger.render();
-            },
-            render: () => {
-                const container = document.getElementById('adminLogsContainer');
-                if (!container) return;
-                container.innerHTML = state.logs.map(l => `
-                    <div class="log-entry">
-                        <span class="log-time">[${l.time}]</span>
-                        <span class="log-${l.type}">${l.msg}</span>
-                    </div>
-                `).join('');
-            }
-        };
-
-        const Toast = {
-            show: (msg, type = 'info') => {
-                const el = document.getElementById('toast');
-                const msgEl = document.getElementById('toastMsg');
-                const icon = document.getElementById('toastIcon');
-                
-                el.classList.remove('border-netflix-red', 'border-neon-green', 'border-neon-error');
-                
-                if (type === 'success') {
-                    el.classList.add('border-neon-green');
-                    icon.className = 'fas fa-check-circle text-neon-green';
-                } else if (type === 'error') {
-                    el.classList.add('border-neon-error');
-                    icon.className = 'fas fa-exclamation-triangle text-neon-error';
-                } else {
-                    el.classList.add('border-netflix-red');
-                    icon.className = 'fas fa-info-circle text-netflix-red';
-                }
-
-                msgEl.innerText = msg;
-                el.classList.remove('translate-y-24');
-                
-                setTimeout(() => el.classList.add('translate-y-24'), 4000);
-                Logger.add(msg, type); // Auto-log toasts
-            }
-        };
-
-        // --- 3. CORE LOGIC (Router & Init) ---
-        const Core = {
-            init: async () => {
-                // Carregamento Inicial Blindado (CORREÇÃO AQUI)
-                try {
-                    Logger.add("Iniciando sistema...");
-                    
-                    // Tentar buscar configs, se falhar (permissão de convidado), segue com defaults
-                    try {
-                        const settingsSnap = await getDoc(DAL.getSettingsRef());
-                        if (settingsSnap.exists()) {
-                            state.settings = { ...state.settings, ...settingsSnap.data() };
-                            Logger.add("Configurações carregadas.");
-                        }
-                    } catch (configError) {
-                        Logger.add("Visitante detectado. Usando configurações padrão.", "warning");
-                    }
-                    
-                    Core.applySettings();
-                    
-                    // Remover Splash Screen
-                    document.getElementById('splashScreen').classList.add('opacity-0', 'pointer-events-none');
-                    document.getElementById('navbar').classList.remove('opacity-0');
-                    document.getElementById('app').classList.remove('opacity-0');
-                    
-                    Core.router('home');
-
-                } catch (e) {
-                    Logger.add(`Falha crítica de inicialização: ${e.message}`, "error");
-                    document.querySelector('#splashScreen p').innerText = "Erro Crítico. Recarregue a página.";
-                    document.querySelector('#splashScreen p').classList.add('text-red-500');
-                }
-            },
-
-            applySettings: () => {
-                document.title = state.settings.siteName;
-                document.getElementById('brandLogo').innerText = state.settings.siteName.toUpperCase();
-                if(state.settings.favicon) document.getElementById('favicon').href = state.settings.favicon;
-            },
-
-            router: (view, params = null) => {
-                state.currentView = view;
-                Logger.add(`Navegação: ${view}`);
-                window.speechSynthesis.cancel();
-                
-                const appDiv = document.getElementById('app');
-                
-                if (view === 'home') Views.renderHome(appDiv);
-                else if (view === 'player') Views.renderPlayer(appDiv, params);
-                else if (view === 'admin') Views.renderAdmin(appDiv);
-            }
-        };
-
-        // --- 4. VIEWS & COMPONENTS ---
-        const Views = {
-            // HOME VIEW
-            renderHome: async (container) => {
-                container.innerHTML = `<div class="flex flex-col items-center mt-32"><div class="loader-spinner"></div><p class="mt-4 text-gray-500 animate-pulse">Buscando catálogo...</p></div>`;
-                
-                // SEÇÃO DE BOAS VINDAS (Visitantes)
-                if (!state.user) {
-                    container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center min-h-[60vh] text-center animate-slide-up">
-                            <h1 class="text-6xl font-black mb-6 text-white drop-shadow-2xl">Bem-vindo ao <span class="text-netflix-red">${state.settings.siteName}</span></h1>
-                            <p class="text-xl text-gray-400 max-w-2xl mb-10 leading-relaxed">A plataforma definitiva para masterizar seu aprendizado. Conteúdo exclusivo, metodologia sequencial e foco total.</p>
-                            <button onclick="authManager.toggleModal(true)" class="bg-netflix-red text-white px-10 py-4 rounded text-xl font-bold hover:bg-netflix-redHover transition shadow-lg hover:shadow-netflix-red/50 transform hover:scale-105 duration-200">
-                                <i class="fas fa-play mr-2"></i> Começar Agora
-                            </button>
-                        </div>`;
-                    return;
-                }
-
-                try {
-                    const [subSnap, unitSnap, lessonSnap] = await Promise.all([
-                        getDocs(DAL.getCollection("subjects")),
-                        getDocs(DAL.getCollection("units")),
-                        getDocs(DAL.getCollection("lessons"))
-                    ]);
-
-                    let html = `
-                        <header class="mb-12 animate-fade-in relative z-10 mt-8">
-                            <h1 class="text-5xl font-black text-white mb-2 drop-shadow-md">${state.settings.welcomeMessage}</h1>
-                            <p class="text-gray-400 font-medium">Continue de onde parou ou inicie uma nova jornada.</p>
-                        </header>
-                    `;
-
-                    if (subSnap.empty) {
-                        html += `<div class="text-center p-12 border border-dashed border-gray-800 rounded-xl text-gray-500">
-                            <i class="fas fa-film text-4xl mb-4 opacity-50"></i><br>Catálogo Vazio. Acesse o Admin para criar conteúdo.
-                        </div>`;
-                    }
-
-                    // Render Hierarchy: Subject -> Units -> Lessons
-                    subSnap.forEach(sub => {
-                        html += `
-                            <div class="mb-12 animate-fade-in group">
-                                <div class="flex items-center gap-4 mb-4 cursor-pointer" onclick="window.startSeries('${sub.id}')">
-                                    <h2 class="text-2xl font-bold text-white group-hover:text-neon-cyan transition duration-300">${sub.data().title}</h2>
-                                    <span class="text-xs bg-white text-black font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition transform translate-x-[-10px] group-hover:translate-x-0">
-                                        REPRODUZIR TUDO
-                                    </span>
-                                </div>
-                        `;
-                        
-                        const subUnits = unitSnap.docs.filter(u => u.data().subjectId === sub.id);
-                        if(subUnits.length === 0) html += `<p class="text-xs text-gray-600 ml-1">Em breve.</p>`;
-
-                        subUnits.forEach(unit => {
-                            html += `
-                                <div class="mb-8 pl-1">
-                                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-                                        <div class="w-1 h-4 bg-netflix-red rounded-full"></div> ${unit.data().title}
-                                    </h3>
-                                    <div class="scrolling-wrapper py-2 pl-1">
-                            `;
-                            
-                            // Ordenação Lógica (Order -> Date)
-                            let lessons = lessonSnap.docs
-                                .filter(l => l.data().unitId === unit.id)
-                                .map(d => ({id: d.id, ...d.data()}));
-                            
-                            lessons.sort((a,b) => (a.order || 999) - (b.order || 999) || a.createdAt.localeCompare(b.createdAt));
-
-                            if(lessons.length === 0) html += `<div class="text-gray-700 text-xs italic p-4 border border-gray-800 rounded">Sem episódios.</div>`;
-
-                            lessons.forEach((lesson, idx) => {
-                                const ytId = Utils.getYouTubeID(lesson.videoUrl);
-                                const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : 'https://placehold.co/300x169/333/999?text=Cover';
-                                
-                                html += `
-                                    <div class="card card-zoom mr-4 relative bg-netflix-card rounded overflow-hidden w-[280px] flex-shrink-0" onclick="window.playLesson('${lesson.id}')">
-                                        <div class="h-40 overflow-hidden relative">
-                                            <img src="${thumb}" class="w-full h-full object-cover opacity-80 hover:opacity-100 transition">
-                                            <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
-                                                EP ${lesson.order || idx + 1}
-                                            </div>
-                                            <!-- Progress Bar Fake (Visual Polish) -->
-                                            <div class="absolute bottom-0 left-0 w-full h-1 bg-gray-800">
-                                                <div class="h-full bg-netflix-red" style="width: ${Math.random() * 100}%"></div>
-                                            </div>
-                                        </div>
-                                        <div class="p-4">
-                                            <h4 class="text-white font-bold text-sm truncate leading-tight">${lesson.title}</h4>
-                                            <div class="flex justify-between items-center mt-2 text-[10px] text-gray-400">
-                                                <span><i class="far fa-clock mr-1"></i> Aula</span>
-                                                <i class="fas fa-play-circle text-white text-lg"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                            html += `</div></div>`;
-                        });
-                        html += `</div>`;
-                    });
-
-                    container.innerHTML = html;
-
-                } catch (e) {
-                    Logger.add(e.message, "error");
-                    container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center mt-32 text-center">
-                            <i class="fas fa-wifi text-6xl text-gray-700 mb-4"></i>
-                            <h3 class="text-xl text-white font-bold">Erro ao carregar conteúdo</h3>
-                            <p class="text-gray-500 mb-6">Verifique sua conexão ou permissões.</p>
-                            <button onclick="Core.router('home')" class="border border-white text-white px-6 py-2 rounded hover:bg-white hover:text-black transition">Tentar Novamente</button>
-                        </div>
-                    `;
-                }
-            },
-
-            // PLAYER VIEW (State Machine)
-            renderPlayer: async (container, lessonId) => {
-                container.innerHTML = `<div class="flex justify-center mt-40"><div class="loader-spinner"></div></div>`;
-                
-                try {
-                    const docSnap = await getDoc(DAL.getDoc("lessons", lessonId));
-                    if (!docSnap.exists()) throw new Error("Lição não encontrada");
-                    
-                    const data = docSnap.data();
-                    
-                    // Fetch Next Logic
-                    const allLessonsSnap = await getDocs(query(DAL.getCollection("lessons"), where("unitId", "==", data.unitId)));
-                    let lessons = allLessonsSnap.docs.map(d => ({id: d.id, ...d.data()}));
-                    lessons.sort((a,b) => (a.order || 999) - (b.order || 999) || a.createdAt.localeCompare(b.createdAt));
-                    
-                    const currentIndex = lessons.findIndex(l => l.id === lessonId);
-                    const nextLessonId = (currentIndex < lessons.length - 1) ? lessons[currentIndex + 1].id : null;
-
-                    // Setup Global Player State
-                    window.playerState = { lessonId, nextLessonId, materialUrl: data.materialUrl };
-
-                    // Render Layout
-                    container.innerHTML = `
-                        <div class="max-w-6xl mx-auto animate-fade-in relative min-h-[80vh] flex flex-col">
-                            <!-- Nav Header -->
-                            <div class="flex justify-between items-center mb-6 py-4 border-b border-gray-800">
-                                <button onclick="app.router('home')" class="text-gray-400 hover:text-white flex items-center gap-2 text-sm font-bold uppercase tracking-wider transition hover:-translate-x-1">
-                                    <i class="fas fa-arrow-left"></i> Voltar
-                                </button>
-                                <div class="text-right">
-                                    <h2 class="text-white font-bold text-lg md:text-xl">${data.title}</h2>
-                                    <span class="text-xs text-netflix-red font-bold uppercase tracking-widest">Episódio ${data.order || currentIndex + 1} / ${lessons.length}</span>
-                                </div>
-                            </div>
-
-                            <!-- FASE 1: VÍDEO -->
-                            <div id="phase1" class="phase-container block opacity-100 transition-opacity duration-500">
-                                <div class="video-wrapper">
-                                    <div id="yt-player"></div>
-                                </div>
-                                <div class="mt-6 flex justify-between items-center text-sm text-gray-500">
-                                    <p class="animate-pulse"><i class="fas fa-eye mr-2"></i> Assistindo...</p>
-                                    <button onclick="Player.nextPhase(2)" class="hover:text-white underline">Pular Vídeo (Dev)</button>
-                                </div>
-                            </div>
-
-                            <!-- FASE 2: TEXTO (TTS) -->
-                            <div id="phase2" class="phase-container hidden opacity-0 transition-opacity duration-500 py-10">
-                                <div class="max-w-3xl mx-auto">
-                                    <div class="flex items-center gap-3 mb-6">
-                                        <div class="w-3 h-3 bg-neon-cyan rounded-full animate-ping"></div>
-                                        <h2 class="text-2xl font-bold text-white">Resumo Inteligente</h2>
-                                    </div>
-                                    <div class="bg-netflix-card p-8 rounded-xl border border-gray-800 shadow-2xl relative overflow-hidden">
-                                        <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-neon-cyan to-transparent"></div>
-                                        <div id="summaryText" class="prose prose-invert prose-lg text-gray-300 leading-relaxed">
-                                            ${data.summary || "Conteúdo de áudio sendo processado..."}
-                                        </div>
-                                    </div>
-                                    <div class="mt-8 text-center">
-                                        <button onclick="Player.skipAudio()" class="border border-gray-600 text-gray-400 px-6 py-2 rounded-full hover:border-white hover:text-white transition text-sm font-bold uppercase tracking-wider">
-                                            Pular Leitura
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- FASE 3: SLIDE (Material) -->
-                            <div id="phase3" class="phase-container hidden opacity-0 transition-opacity duration-500 py-4">
-                                <div class="text-center mb-6">
-                                    <h2 class="text-3xl font-bold text-white mb-2">Material de Apoio</h2>
-                                    <p class="text-gray-400 text-sm">Estude o conteúdo abaixo antes de finalizar.</p>
-                                </div>
-                                
-                                ${data.materialUrl ? `
-                                    <div class="w-full h-[600px] bg-white rounded-lg shadow-2xl overflow-hidden relative mb-6 border border-gray-700 group">
-                                        <iframe src="${data.materialUrl}" class="w-full h-full border-0" onerror="this.style.display='none'; document.getElementById('iframeFallback').style.display='block'"></iframe>
-                                        <!-- Error Boundary / Fallback -->
-                                        <div id="iframeFallback" class="hidden absolute inset-0 bg-gray-900 flex flex-col items-center justify-center p-8 text-center">
-                                            <i class="fas fa-unlink text-4xl text-gray-500 mb-4"></i>
-                                            <p class="text-white font-bold mb-4">Não foi possível carregar a pré-visualização.</p>
-                                            <a href="${data.materialUrl}" target="_blank" class="bg-white text-black px-6 py-2 rounded font-bold hover:bg-gray-200">Abrir em Nova Aba</a>
-                                        </div>
-                                    </div>
-                                    <div class="text-center mb-8">
-                                        <a href="${data.materialUrl}" target="_blank" class="text-neon-cyan text-xs font-bold uppercase tracking-widest hover:underline">
-                                            <i class="fas fa-external-link-alt mr-1"></i> Abrir link externamente
-                                        </a>
-                                    </div>
-                                ` : `
-                                    <div class="bg-gray-800/50 p-12 rounded-xl text-center border border-dashed border-gray-700 mb-8">
-                                        <i class="fas fa-check-circle text-5xl text-gray-600 mb-4"></i>
-                                        <p class="text-white font-bold">Nenhum slide extra.</p>
-                                        <p class="text-sm text-gray-500">Você pode prosseguir.</p>
-                                    </div>
-                                `}
-
-                                <div class="flex justify-center pb-12">
-                                    <button onclick="Player.finish()" class="bg-neon-green text-black px-12 py-4 rounded-full text-lg font-black hover:bg-green-400 transition shadow-[0_0_40px_rgba(57,255,20,0.3)] hover:scale-105 transform duration-200 flex items-center gap-3">
-                                        <i class="fas fa-check"></i> CONCLUIR EPISÓDIO
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    // Init Youtube
-                    if (window.YT && window.YT.Player) {
-                        new YT.Player('yt-player', {
-                            height: '100%', width: '100%', videoId: Utils.getYouTubeID(data.videoUrl),
-                            playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0, 'modestbranding': 1 },
-                            events: {
-                                'onStateChange': (e) => { if (e.data === YT.PlayerState.ENDED) Player.nextPhase(2); }
-                            }
-                        });
-                    }
-
-                } catch (e) {
-                    Logger.add(e.message, "error");
-                    container.innerHTML = `<div class="text-center mt-20 text-red-500 font-bold">Erro ao carregar aula.</div>`;
-                }
-            },
-
-            // ADMIN VIEW
-            renderAdmin: (container) => {
-                if (!state.isAdmin) return Core.router('home');
-                container.innerHTML = `
-                    <div class="max-w-7xl mx-auto animate-fade-in pb-32">
-                        <header class="flex flex-col md:flex-row justify-between items-end border-b border-gray-800 pb-6 mb-8 gap-4">
-                            <div>
-                                <h2 class="text-4xl font-black text-white">CMS <span class="text-neon-cyan">MASTER</span></h2>
-                                <p class="text-gray-500 text-sm mt-1">Central de Controle de Conteúdo</p>
-                            </div>
-                            <div class="bg-gray-900 p-1 rounded-lg flex gap-1">
-                                ${['Settings', 'Subject', 'Unit', 'Lesson'].map(t => 
-                                    `<button onclick="Admin.renderTab('${t.toLowerCase()}')" class="px-4 py-2 text-xs font-bold uppercase rounded text-gray-400 hover:text-white hover:bg-gray-800 transition" id="tab-${t.toLowerCase()}">${t}</button>`
-                                ).join('')}
-                            </div>
-                        </header>
-                        
-                        <div id="adminContent" class="bg-netflix-card border border-gray-800 rounded-xl min-h-[400px] shadow-2xl relative overflow-hidden">
-                            <!-- Dynamic Content -->
-                        </div>
-
-                        <!-- Visual Logger (Footer) -->
-                        <div class="fixed bottom-0 left-0 w-full bg-black border-t border-gray-800 h-32 overflow-y-auto p-4 z-50 opacity-90 hover:opacity-100 transition-opacity">
-                            <h4 class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2 sticky top-0 bg-black">System Logs</h4>
-                            <div id="adminLogsContainer" class="admin-logger"></div>
-                        </div>
-                    </div>
-                `;
-                Admin.renderTab('settings');
-            }
-        };
-
-        // --- 5. LOGIC CONTROLLERS ---
-        
-        // Utils
-        const Utils = {
-            getYouTubeID: (url) => {
-                if (!url) return null;
-                const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-                return (match && match[2].length === 11) ? match[2] : null;
-            },
-            stripHtml: (html) => {
-                const tmp = document.createElement("DIV");
-                tmp.innerHTML = html;
-                return tmp.textContent || "";
-            }
-        };
-
-        // Player Controller
-        window.Player = {
-            nextPhase: (phase) => {
-                document.querySelectorAll('.phase-container').forEach(el => {
-                    el.classList.add('hidden', 'opacity-0');
-                    el.classList.remove('block', 'opacity-100');
-                });
-                
-                const next = document.getElementById(`phase${phase}`);
-                if (next) {
-                    next.classList.remove('hidden');
-                    // Timeout for fade transition
-                    setTimeout(() => next.classList.remove('opacity-0'), 50);
-                }
-
-                // Phase 2 Logic (TTS)
-                if (phase === 2) {
-                    const text = Utils.stripHtml(document.getElementById('summaryText').innerHTML);
-                    if (text.length > 5) {
-                        const u = new SpeechSynthesisUtterance(text);
-                        u.lang = 'pt-BR';
-                        u.rate = 1.1;
-                        u.onend = () => Player.nextPhase(3);
-                        window.speechSynthesis.speak(u);
-                    } else {
-                        setTimeout(() => Player.nextPhase(3), 1000);
-                    }
-                }
-                
-                // Phase 3 Auto-Skip Check
-                if (phase === 3) {
-                    // Se nao tem material, talvez pular? Não, deixamos o usuario concluir.
-                }
-            },
-            skipAudio: () => {
-                window.speechSynthesis.cancel();
-                Player.nextPhase(3);
-            },
-            finish: async () => {
-                // Save Progress
-                if (state.user && !state.user.isAnonymous) {
-                    const { lessonId } = window.playerState;
-                    setDoc(DAL.getUserDoc(state.user.uid, "progress", lessonId), { 
-                        concluido: true, date: new Date().toISOString() 
-                    }).catch(e => Logger.add("Erro ao salvar progresso", "error"));
-                }
-
-                // Show Overlay
-                const overlay = document.getElementById('countdownOverlay');
-                overlay.classList.remove('hidden');
-                overlay.classList.add('flex');
-                
-                // Countdown
-                let count = 5;
-                const timer = setInterval(() => {
-                    count--;
-                    document.getElementById('countdownText').innerText = count;
-                    document.getElementById('timerCircle').style.strokeDashoffset = 283 - (283 * count) / 5;
-                    
-                    if (count <= 0) {
-                        clearInterval(timer);
-                        overlay.classList.add('hidden');
-                        const { nextLessonId } = window.playerState;
-                        if (nextLessonId) Core.router('player', nextLessonId);
-                        else {
-                            Toast.show("Módulo Finalizado!", "success");
-                            Core.router('home');
-                        }
-                    }
-                }, 1000);
-                
-                window.activeTimer = timer;
-            }
-        };
-        
-        window.cancelAutoPlay = () => {
-            clearInterval(window.activeTimer);
-            document.getElementById('countdownOverlay').classList.add('hidden');
-        };
-
-        // Admin Controller
-        window.Admin = {
-            renderTab: async (type) => {
-                // UI Tabs Update
-                document.querySelectorAll('[id^="tab-"]').forEach(b => b.classList.replace('text-white', 'text-gray-400'));
-                document.getElementById(`tab-${type}`).classList.replace('text-gray-400', 'text-white');
-                
-                const content = document.getElementById('adminContent');
-                content.innerHTML = '<div class="flex justify-center py-20"><div class="loader-spinner"></div></div>';
-                state.editingId = null;
-
-                try {
-                    if (type === 'settings') {
-                        content.innerHTML = `
-                            <div class="p-8">
-                                <h3 class="text-xl font-bold text-white mb-6 border-l-4 border-neon-purple pl-4">Configurações Gerais</h3>
-                                <div class="space-y-6 max-w-2xl">
-                                    <input type="text" id="siteName" value="${state.settings.siteName}" class="w-full bg-black border border-gray-700 text-white p-4 rounded focus:border-neon-purple outline-none" placeholder="Nome do Site">
-                                    <input type="text" id="welcomeMsg" value="${state.settings.welcomeMessage}" class="w-full bg-black border border-gray-700 text-white p-4 rounded focus:border-neon-purple outline-none" placeholder="Mensagem de Boas-vindas">
-                                    <input type="url" id="faviconUrl" value="${state.settings.favicon || ''}" class="w-full bg-black border border-gray-700 text-white p-4 rounded focus:border-neon-purple outline-none" placeholder="URL Favicon">
-                                    <button onclick="Admin.saveSettings()" class="bg-neon-purple text-white font-bold px-8 py-3 rounded hover:bg-purple-700 transition">Salvar Alterações</button>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        // Generic List Logic
-                        const colName = type + 's';
-                        const snap = await getDocs(DAL.getCollection(colName));
-                        const items = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                        
-                        // Sort by order or date
-                        items.sort((a,b) => (a.order || 999) - (b.order || 999) || (a.createdAt || '').localeCompare(b.createdAt || ''));
-
-                        // Dynamic Form Fields
-                        let fields = '';
-                        if (type === 'subject') {
-                            fields = `<input id="title" class="w-full bg-black border border-gray-700 text-white p-3 rounded" placeholder="Nome da Matéria">`;
-                        } else if (type === 'unit') {
-                            const subSnap = await getDocs(DAL.getCollection('subjects'));
-                            const opts = subSnap.docs.map(d => `<option value="${d.id}">${d.data().title}</option>`).join('');
-                            fields = `<select id="subjectId" class="w-full bg-black border border-gray-700 text-white p-3 rounded mb-4">${opts}</select><input id="title" class="w-full bg-black border border-gray-700 text-white p-3 rounded" placeholder="Nome da Unidade">`;
-                        } else if (type === 'lesson') {
-                            const unitSnap = await getDocs(DAL.getCollection('units'));
-                            const opts = unitSnap.docs.map(d => `<option value="${d.id}">${d.data().title}</option>`).join('');
-                            fields = `
-                                <div class="grid grid-cols-2 gap-4 mb-4">
-                                    <select id="unitId" class="bg-black border border-gray-700 text-white p-3 rounded">${opts}</select>
-                                    <input type="number" id="order" class="bg-black border border-gray-700 text-white p-3 rounded" placeholder="Ordem (1, 2...)">
-                                </div>
-                                <input id="title" class="w-full bg-black border border-gray-700 text-white p-3 rounded mb-4" placeholder="Título da Aula">
-                                <input id="videoUrl" class="w-full bg-black border border-gray-700 text-white p-3 rounded mb-4" placeholder="YouTube URL">
-                                <input id="materialUrl" class="w-full bg-black border border-gray-700 text-white p-3 rounded mb-4" placeholder="Material URL (Slide/PDF)">
-                                <div id="editor" class="h-40 bg-gray-900 text-gray-300"></div>
-                            `;
-                        }
-
-                        content.innerHTML = `
-                            <div class="grid grid-cols-1 lg:grid-cols-3 h-full min-h-[500px]">
-                                <!-- Form -->
-                                <div class="p-6 border-r border-gray-800 bg-[#141414]">
-                                    <h3 class="text-white font-bold mb-6 flex justify-between items-center">
-                                        <span id="formTitle">Novo ${type}</span>
-                                        <button onclick="Admin.renderTab('${type}')" id="btnCancel" class="hidden text-xs text-red-500 hover:underline">Cancelar</button>
-                                    </h3>
-                                    <div class="space-y-4">
-                                        ${fields}
-                                        <button onclick="Admin.save('${type}')" id="btnSave" class="w-full bg-neon-cyan text-black font-bold py-3 rounded hover:bg-cyan-400 transition mt-4">Criar</button>
-                                    </div>
-                                </div>
-                                <!-- List -->
-                                <div class="col-span-2 p-0 overflow-y-auto max-h-[600px]">
-                                    <table class="w-full text-left border-collapse">
-                                        <thead class="bg-gray-900 text-gray-500 text-xs uppercase sticky top-0">
-                                            <tr><th class="p-4">Título</th><th class="p-4">ID</th><th class="p-4 text-right">Ações</th></tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-gray-800">
-                                            ${items.map(item => `
-                                                <tr id="row-${item.id}" class="hover:bg-gray-800/50 transition group">
-                                                    <td class="p-4 text-white font-medium">
-                                                        ${item.order ? `<span class="text-gray-500 mr-2 text-xs">#${item.order}</span>` : ''}
-                                                        ${item.title}
-                                                    </td>
-                                                    <td class="p-4 text-gray-600 font-mono text-xs">${item.id.substring(0,6)}...</td>
-                                                    <td class="p-4 text-right">
-                                                        <button onclick="Admin.edit('${type}', '${item.id}')" class="text-neon-cyan opacity-0 group-hover:opacity-100 transition mr-4 hover:underline">Editar</button>
-                                                        <button onclick="Admin.del('${type}', '${item.id}')" class="text-red-500 opacity-0 group-hover:opacity-100 transition hover:underline">Excluir</button>
-                                                    </td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                    ${items.length === 0 ? '<div class="p-8 text-center text-gray-600">Nada aqui ainda.</div>' : ''}
-                                </div>
-                            </div>
-                        `;
-                        
-                        if(type === 'lesson') state.quill = new Quill('#editor', { theme: 'snow' });
-                    }
-                } catch(e) { Logger.add(e.message, "error"); }
-            },
-
-            save: async (type) => {
-                const btn = document.getElementById('btnSave');
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-                
-                try {
-                    const colName = type + 's';
-                    const data = { 
-                        title: document.getElementById('title').value, 
-                        updatedAt: new Date().toISOString() 
-                    };
-                    
-                    if (!state.editingId) data.createdAt = new Date().toISOString();
-
-                    if (type === 'unit') data.subjectId = document.getElementById('subjectId').value;
-                    if (type === 'lesson') {
-                        data.unitId = document.getElementById('unitId').value;
-                        data.order = parseInt(document.getElementById('order').value) || 0;
-                        data.videoUrl = document.getElementById('videoUrl').value;
-                        data.materialUrl = document.getElementById('materialUrl').value;
-                        data.summary = state.quill.root.innerHTML;
-                    }
-
-                    if (state.editingId) {
-                        await updateDoc(DAL.getDoc(colName, state.editingId), data);
-                        Toast.show("Atualizado com sucesso", "success");
-                    } else {
-                        await addDoc(DAL.getCollection(colName), data);
-                        Toast.show("Criado com sucesso", "success");
-                    }
-                    
-                    Admin.renderTab(type);
-
-                } catch(e) {
-                    Logger.add(e.message, "error");
-                    Toast.show("Erro ao salvar", "error");
-                }
-            },
-
-            saveSettings: async () => {
-                try {
-                    const s = {
-                        siteName: document.getElementById('siteName').value,
-                        welcomeMessage: document.getElementById('welcomeMsg').value,
-                        favicon: document.getElementById('faviconUrl').value
-                    };
-                    await setDoc(DAL.getSettingsRef(), s);
-                    state.settings = s;
-                    Core.applySettings();
-                    Toast.show("Configurações salvas!", "success");
-                } catch(e) { Logger.add(e.message, "error"); }
-            },
-
-            edit: async (type, id) => {
-                state.editingId = id;
-                const row = document.getElementById(`row-${id}`);
-                if(row) {
-                    document.querySelectorAll('tr').forEach(r => r.classList.remove('active-admin-item'));
-                    row.classList.add('active-admin-item');
-                }
-
-                try {
-                    const snap = await getDoc(DAL.getDoc(type + 's', id));
-                    const data = snap.data();
-                    
-                    document.getElementById('title').value = data.title;
-                    if (type === 'unit') document.getElementById('subjectId').value = data.subjectId;
-                    if (type === 'lesson') {
-                        document.getElementById('unitId').value = data.unitId;
-                        document.getElementById('order').value = data.order || "";
-                        document.getElementById('videoUrl').value = data.videoUrl;
-                        document.getElementById('materialUrl').value = data.materialUrl || "";
-                        state.quill.root.innerHTML = data.summary || "";
-                    }
-
-                    document.getElementById('formTitle').innerText = "Editando...";
-                    document.getElementById('btnSave').innerText = "Atualizar";
-                    document.getElementById('btnSave').classList.replace('bg-neon-cyan', 'bg-neon-green');
-                    document.getElementById('btnCancel').classList.remove('hidden');
-
-                } catch(e) { Logger.add("Erro ao carregar item", "error"); }
-            },
-
-            del: async (type, id) => {
-                if(confirm("Confirmar exclusão?")) {
-                    await deleteDoc(DAL.getDoc(type + 's', id));
-                    Toast.show("Excluído.", "success");
-                    Admin.renderTab(type);
-                }
-            }
-        };
-
-        // --- 6. AUTH & GLOBAL BINDINGS ---
-        window.app = Core;
-        window.authManager = {
-            toggleModal: (s) => {
-                const m = document.getElementById('loginModal');
-                if(s) { m.classList.remove('hidden'); setTimeout(() => document.getElementById('loginCard').classList.remove('scale-95'), 50); }
-                else { m.classList.add('hidden'); document.getElementById('loginCard').classList.add('scale-95'); }
-            },
-            handleLogin: async () => {
-                const e = document.getElementById('emailInput').value, p = document.getElementById('passInput').value;
-                try { await signInWithEmailAndPassword(auth, e, p); authManager.toggleModal(false); Toast.show("Logado", "success"); }
-                catch(er) { Toast.show(er.message, "error"); }
-            },
-            handleRegister: async () => {
-                const e = document.getElementById('emailInput').value, p = document.getElementById('passInput').value;
-                try { await createUserWithEmailAndPassword(auth, e, p); authManager.toggleModal(false); Toast.show("Bem-vindo!", "success"); }
-                catch(er) { Toast.show(er.message, "error"); }
-            }
-        };
-
-        // Window Bindings for HTML onclick
-        window.startSeries = Core.router.bind(null, 'player'); // Atalho direto se tiver ID
-        window.playLesson = (id) => Core.router('player', id);
-        
-        // Initial Auth Check
-        onAuthStateChanged(auth, (user) => {
-            state.user = user;
-            const container = document.getElementById('authContainer');
-            if (user) {
-                if (!user.isAnonymous) {
-                    state.isAdmin = user.email.endsWith('@userpro.com');
-                    if (state.isAdmin) document.getElementById('adminBtn').classList.remove('hidden');
-                    container.innerHTML = `<button onclick="getAuth().signOut().then(()=>window.location.reload())" class="text-xs text-gray-400 hover:text-white border border-gray-700 px-3 py-1 rounded">Sair</button>`;
-                } else {
-                    container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="text-xs bg-netflix-red text-white px-3 py-1 rounded">Entrar</button>`;
-                }
-                
-                // Se ainda estiver no splash, inicializa. Se já carregou, faz reload silencioso da view
-                if (document.getElementById('splashScreen').classList.contains('pointer-events-none')) {
-                    if (state.currentView === 'home') Views.renderHome(document.getElementById('app'));
-                } else {
-                    Core.init();
-                }
+    <!-- Scripts de Interatividade -->
+    <script>
+        // Efeito de Header com sombra ao rolar a página
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
             } else {
-                // If logged out completely
-                container.innerHTML = `<button onclick="authManager.toggleModal(true)" class="text-xs bg-netflix-red text-white px-3 py-1 rounded">Entrar</button>`;
-                // Apenas inicia se o splash ainda estiver ativo (primeiro load)
-                if (!document.getElementById('splashScreen').classList.contains('pointer-events-none')) {
-                    Core.init();
-                }
+                header.classList.remove('scrolled');
             }
         });
 
+        // Animação de Scroll (Scroll Reveal)
+        const reveals = document.querySelectorAll('.reveal');
+        
+        const revealOptions = {
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target); // Anima apenas uma vez
+            });
+        }, revealOptions);
+
+        reveals.forEach(reveal => {
+            revealOnScroll.observe(reveal);
+        });
     </script>
 </body>
 </html>
